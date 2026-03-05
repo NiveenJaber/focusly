@@ -1,0 +1,5552 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Solstice Focus</title>
+  <style>
+    /* =====================================================
+   SOLSTICE FOCUS — Premium Single-File Pomodoro
+   4 Seasonal Themes · Particle Systems · Audio Engine
+   Fonts: Playfair Display + JetBrains Mono
+   ===================================================== */
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=JetBrains+Mono:wght@300;400;500;700&family=Cinzel+Decorative:wght@400;700&display=swap');
+
+    /* ── SEASON VARIABLE SETS ───────────────────────────── */
+    :root {
+      --ease: cubic-bezier(.4, 0, .2, 1);
+      --speed: 1.1s;
+    }
+
+    body.spring {
+      --bg1: #fdeaf3;
+      --bg2: #f7d9e9;
+      --bg3: #efd2f0;
+
+      --surf: rgba(255, 255, 255, .65);
+      --surfl: rgba(255, 255, 255, .40);
+
+      --border: rgba(220, 130, 170, .20);
+      --borderl: rgba(220, 130, 170, .10);
+
+      --acc: #e05a87;
+      --acc2: #c94d78;
+      --acc3: #f29db8;
+
+      --gold: #f08aa6;
+      --glow: rgba(224, 90, 135, .35);
+
+      --txt: #2b1420;
+      --txt2: #7a3a58;
+      --mut: #b77a95;
+
+      --ring1: #e06c90;
+      --ring2: #d8a8e2;
+
+      --partcol: 230, 140, 170;
+
+      --theme-name: "🌸 Spring";
+    }
+
+    body.summer {
+      --bg1: #e8f4ff;
+      --bg2: #fffbe0;
+      --bg3: #fff3c0;
+      --surf: rgba(255, 255, 255, .68);
+      --surfl: rgba(255, 255, 255, .45);
+      --border: rgba(240, 160, 0, .28);
+      --borderl: rgba(240, 160, 0, .14);
+      --acc: #e8900a;
+      --acc2: #c06800;
+      --acc3: #f5b030;
+      --gold: #f0a000;
+      --glow: rgba(240, 150, 10, .45);
+      --txt: #1a1400;
+      --txt2: #5a3a00;
+      --mut: #9a7020;
+      --ring1: #f0a010;
+      --ring2: #4aabdd;
+      --partcol: 255, 185, 20;
+      --theme-name: "☀️ Summer";
+    }
+
+    body.autumn {
+      --bg1: #fbe8d6;
+      /* Light amber background */
+      --bg2: #f8a64f;
+      /* Soft caramel mid-tone */
+      --bg3: #f0c38f;
+      /* Warm golden sand */
+
+      --surf: rgba(255, 255, 255, .25);
+      --surfl: rgba(255, 255, 255, .12);
+
+      --border: rgba(220, 110, 40, .28);
+      --borderl: rgba(220, 110, 40, .14);
+
+      --acc: #e07e3c;
+      /* Pumpkin accent */
+      --acc2: #c86028;
+      /* Deep orange highlight */
+      --acc3: #f5a040;
+      /* Golden accent */
+
+      --gold: #f0a830;
+      --glow: rgba(224, 110, 40, .35);
+
+      --txt: #3a1f0d;
+      /* Dark chocolate text */
+      --txt2: #7a4a26;
+      /* Secondary text */
+      --mut: #b77a50;
+      /* Muted text */
+
+      --ring1: #e07e3c;
+      --ring2: #f5c58c;
+
+      --partcol: 224, 110, 40;
+      --theme-name: "🍁 Autumn";
+    }
+
+    body.winter {
+      --bg1: #0e1d30;
+      --bg2: #142540;
+      --bg3: #101c30;
+      --surf: rgba(255, 255, 255, .10);
+      --surfl: rgba(255, 255, 255, .055);
+      --border: rgba(140, 210, 240, .24);
+      --borderl: rgba(140, 210, 240, .12);
+      --acc: #82cee8;
+      --acc2: #3e92c0;
+      --acc3: #c0eafc;
+      --gold: #b0dcea;
+      --glow: rgba(130, 206, 232, .48);
+      --txt: #eef8fc;
+      --txt2: #b8d8e8;
+      --mut: #4e7890;
+      --ring1: #82cee8;
+      --ring2: #3e92c0;
+      --partcol: 180, 225, 245;
+      --theme-name: "❄️ Winter";
+    }
+
+    /* ── BASE ────────────────────────────────────────────── */
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html,
+    body {
+      height: 100%;
+    }
+
+    body {
+      font-family: 'JetBrains Mono', monospace;
+      background: linear-gradient(160deg, var(--bg1) 0%, var(--bg2) 50%, var(--bg3) 100%);
+      color: var(--txt);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+      transition: background var(--speed) var(--ease), color var(--speed) var(--ease);
+    }
+
+    body.summer {
+      background: linear-gradient(160deg,
+          #a7e3ff 0%,
+          /* Soft sky blue */
+          #bce7ff 20%,
+          /* Light sky */
+          #dff8ff 40%,
+          /* Very pale sky */
+          #fff9d4 60%,
+          /* Soft sunlight yellow */
+          #ffe799 80%,
+          /* Warm sand tone */
+          #ffdd70 100%
+          /* Golden summer glow */
+        );
+    }
+
+    /* ── CANVAS (particles) ─────────────────────────────── */
+    #fx-canvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    #anim-canvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      opacity: .7
+    }
+
+    /* ── SEASON-SPECIFIC OVERLAYS ───────────────────────── */
+    #theme-overlay {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1;
+      transition: all var(--speed) var(--ease);
+    }
+
+    body.spring #theme-overlay {
+      background: radial-gradient(ellipse 90% 50% at 50% -5%, rgba(255, 180, 210, .18) 0%, transparent 65%)
+    }
+
+    body.summer #theme-overlay {
+      background: radial-gradient(ellipse 60% 40% at 50% -10%, rgba(255, 230, 120, .35) 0%, transparent 55%), radial-gradient(ellipse 80% 60% at 50% -5%, rgba(74, 171, 221, .12) 0%, transparent 50%);
+      animation: sunPulse 8s ease-in-out infinite
+    }
+
+    body.autumn #theme-overlay {
+      background: radial-gradient(ellipse 120% 35% at 50% 108%, rgba(180, 60, 10, .18) 0%, transparent 60%);
+      animation: fogDrift 14s ease-in-out infinite
+    }
+
+    body.winter #theme-overlay {
+      background: radial-gradient(ellipse 55% 55% at -5% -5%, rgba(100, 190, 230, .14) 0%, transparent 55%), radial-gradient(ellipse 55% 55% at 105% 105%, rgba(80, 160, 210, .12) 0%, transparent 55%);
+      animation: auroraShift 16s ease-in-out infinite
+    }
+
+    @keyframes heatShimmer {
+
+      0%,
+      100% {
+        transform: scaleY(1) translateY(0);
+        opacity: 1
+      }
+
+      50% {
+        transform: scaleY(1.015) translateY(-6px);
+        opacity: .7
+      }
+    }
+
+    @keyframes sunPulse {
+
+      0%,
+      100% {
+        opacity: .9;
+        transform: scale(1)
+      }
+
+      50% {
+        opacity: 1;
+        transform: scale(1.04)
+      }
+    }
+
+    @keyframes fogDrift {
+
+      0%,
+      100% {
+        transform: translateX(0);
+        opacity: 1
+      }
+
+      50% {
+        transform: translateX(28px);
+        opacity: .65
+      }
+    }
+
+    @keyframes auroraShift {
+      0% {
+        filter: hue-rotate(0deg) brightness(1)
+      }
+
+      50% {
+        filter: hue-rotate(30deg) brightness(1.15)
+      }
+
+      100% {
+        filter: hue-rotate(0deg) brightness(1)
+      }
+    }
+
+    /* Frost crack overlay for winter */
+    #frost-overlay {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1;
+      opacity: 0;
+      transition: opacity var(--speed) var(--ease);
+      background-image:
+        linear-gradient(72deg, transparent 47%, rgba(140, 210, 240, .08) 49%, transparent 51%),
+        linear-gradient(144deg, transparent 47%, rgba(140, 210, 240, .07) 49%, transparent 51%),
+        linear-gradient(216deg, transparent 47%, rgba(140, 210, 240, .06) 49%, transparent 51%),
+        linear-gradient(24deg, transparent 47%, rgba(140, 210, 240, .07) 49%, transparent 51%),
+        radial-gradient(ellipse 35% 35% at 2% 5%, rgba(180, 235, 255, .10) 0%, transparent 55%),
+        radial-gradient(ellipse 30% 30% at 98% 5%, rgba(150, 210, 240, .09) 0%, transparent 55%),
+        radial-gradient(ellipse 25% 25% at 2% 98%, rgba(140, 200, 230, .08) 0%, transparent 55%),
+        radial-gradient(ellipse 20% 20% at 98% 98%, rgba(160, 215, 242, .07) 0%, transparent 55%);
+      background-size: 100% 100%;
+    }
+
+    body.winter #frost-overlay {
+      opacity: 1
+    }
+
+    /* ── AURORA OVERLAY (winter) ────────────────────────── */
+    #aurora-overlay {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1;
+      opacity: 0;
+      transition: opacity var(--speed) var(--ease);
+      background:
+        radial-gradient(ellipse 80% 30% at 20% 15%, rgba(50, 180, 130, .08) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 25% at 70% 10%, rgba(80, 120, 200, .07) 0%, transparent 55%),
+        radial-gradient(ellipse 70% 20% at 50% 20%, rgba(120, 60, 180, .06) 0%, transparent 50%);
+    }
+
+    body.winter #aurora-overlay {
+      opacity: 1;
+      animation: auroraShift 16s ease-in-out infinite
+    }
+
+    /* ── SPRING SHIMMER ──────────────────────────────────── */
+    #spring-shimmer {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1;
+      opacity: 0;
+      transition: opacity var(--speed) var(--ease);
+      background: radial-gradient(ellipse 70% 30% at 50% 5%, rgba(255, 200, 220, .18) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 20% at 80% 10%, rgba(200, 160, 240, .12) 0%, transparent 50%);
+      animation: springShimmer 12s ease-in-out infinite;
+    }
+
+    body.spring #spring-shimmer {
+      opacity: 1
+    }
+
+    @keyframes springShimmer {
+
+      0%,
+      100% {
+        transform: translateX(0) scale(1);
+        opacity: .8
+      }
+
+      33% {
+        transform: translateX(20px) scale(1.02);
+        opacity: 1
+      }
+
+      66% {
+        transform: translateX(-15px) scale(.98);
+        opacity: .6
+      }
+    }
+
+
+
+    /* ── APP SHELL ───────────────────────────────────────── */
+    #app {
+      position: relative;
+      z-index: 2;
+      max-width: 560px;
+      margin: 0 auto;
+      padding: 24px 18px 116px
+    }
+
+    /* ── HEADER ──────────────────────────────────────────── */
+    #hdr {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 20px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--border)
+    }
+
+    #logo {
+      font-family: 'Cinzel Decorative', serif;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: var(--acc);
+      text-shadow: 0 0 22px var(--glow);
+      line-height: 1;
+      transition: color var(--speed) var(--ease), text-shadow var(--speed) var(--ease);
+    }
+
+    #logo-sub {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      color: var(--mut);
+      letter-spacing: 3px;
+      margin-top: 5px;
+      text-transform: uppercase;
+      transition: color var(--speed) var(--ease);
+    }
+
+    #rank-wrap {
+      text-align: right
+    }
+
+    #rank-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 15px;
+      font-weight: 600;
+      line-height: 1;
+      transition: color .4s
+    }
+
+    #xp-disp {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      color: var(--mut);
+      margin-top: 4px;
+      transition: color var(--speed) var(--ease);
+    }
+
+    /* ── DATETIME BAR ────────────────────────────────────── */
+    #datetime-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      justify-content: center;
+      margin-bottom: 14px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--borderl);
+      font-family: 'JetBrains Mono', monospace;
+      transition: color var(--speed) var(--ease);
+    }
+
+    #dt-day {
+      font-size: 10px;
+      color: var(--acc);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      font-weight: 500;
+      transition: color var(--speed) var(--ease)
+    }
+
+    #dt-date {
+      font-size: 10px;
+      color: var(--txt2);
+      letter-spacing: 1px;
+      transition: color var(--speed) var(--ease)
+    }
+
+    #dt-sep {
+      color: var(--mut);
+      font-size: 10px;
+      transition: color var(--speed) var(--ease);
+    }
+
+    #dt-time {
+      font-size: 13px;
+      color: var(--acc);
+      letter-spacing: 2px;
+      font-weight: 500;
+      font-variant-numeric: tabular-nums;
+      min-width: 72px;
+      text-align: center;
+      transition: color var(--speed) var(--ease);
+    }
+
+    /* ── SEASON SWITCHER ─────────────────────────────────── */
+    #season-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      margin-bottom: 16px
+    }
+
+    .s-btn {
+      background: var(--surfl);
+      border: 1px solid var(--borderl);
+      color: var(--mut);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      letter-spacing: .5px;
+      padding: 9px 4px;
+      cursor: pointer;
+      border-radius: 8px;
+      text-transform: uppercase;
+      transition: all .25s;
+      text-align: center;
+    }
+
+    .s-btn:hover,
+    .s-btn.active {
+      border-color: var(--acc);
+      color: var(--acc);
+      background: var(--surfl);
+      box-shadow: 0 0 12px var(--glow);
+    }
+
+    .s-btn.active {
+      background: var(--surf);
+    }
+
+    /* ── CARD ────────────────────────────────────────────── */
+    .card {
+      background: var(--surf);
+      backdrop-filter: blur(22px);
+      -webkit-backdrop-filter: blur(22px);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 22px;
+      margin-bottom: 12px;
+      position: relative;
+      overflow: hidden;
+      transition: background var(--speed) var(--ease), border-color var(--speed) var(--ease);
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--acc), transparent);
+      opacity: .45;
+      transition: background var(--speed) var(--ease);
+    }
+
+    .sec-lbl {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 3px;
+      color: var(--acc);
+      text-transform: uppercase;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: color var(--speed) var(--ease);
+    }
+
+    .sec-lbl::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+      transition: background var(--speed) var(--ease);
+    }
+
+    /* ── MODE TABS ───────────────────────────────────────── */
+    #mode-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 6px;
+      margin-bottom: 24px
+    }
+
+    .m-tab {
+      background: transparent;
+      border: 1px solid var(--mut);
+      color: var(--mut);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      letter-spacing: .5px;
+      padding: 9px 4px;
+      cursor: pointer;
+      border-radius: 8px;
+      text-transform: uppercase;
+      transition: all .22s;
+    }
+
+    .m-tab:hover {
+      border-color: var(--acc2);
+      color: var(--acc2);
+    }
+
+    .m-tab.active {
+      border-color: var(--acc);
+      color: var(--acc);
+      background: var(--surfl);
+      box-shadow: 0 0 14px var(--glow)
+    }
+
+    /* ── RING TIMER ──────────────────────────────────────── */
+    #ring-wrap {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 22px;
+      position: relative;
+    }
+
+    #ring-svg {
+      filter: drop-shadow(0 0 18px var(--glow));
+      transition: filter var(--speed) var(--ease);
+    }
+
+    #ring-track {
+      stroke: rgba(255, 255, 255, .07);
+      transition: stroke var(--speed) var(--ease)
+    }
+
+    #ring-fill {
+      stroke: var(--ring1);
+      stroke-linecap: round;
+      transition: stroke-dashoffset 1s linear, stroke var(--speed) var(--ease);
+    }
+
+    #ring-fill.brk {
+      stroke: var(--ring2)
+    }
+
+    #ring-glow-filter feGaussianBlur {
+      stdDeviation: 3
+    }
+
+    #timer-ctr {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #time-disp {
+      font-family: 'Playfair Display', serif;
+      font-size: 64px;
+      font-weight: 400;
+      color: var(--txt);
+      letter-spacing: -2px;
+      line-height: 1;
+      text-shadow: 0 2px 30px rgba(0, 0, 0, .25);
+      transition: color var(--speed) var(--ease);
+    }
+
+    #mode-disp {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 4px;
+      color: var(--acc);
+      margin-top: 7px;
+      text-transform: uppercase;
+      transition: color var(--speed) var(--ease);
+    }
+
+    #hc-lbl {
+      display: none;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 8px;
+      color: #ff6060;
+      letter-spacing: 2px;
+      margin-top: 5px
+    }
+
+    /* ── CONTROLS ────────────────────────────────────────── */
+    #controls {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .ctrl {
+      background: transparent;
+      border: 1px solid var(--mut);
+      color: var(--mut);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 1px;
+      padding: 10px 16px;
+      cursor: pointer;
+      border-radius: 8px;
+      text-transform: uppercase;
+      transition: all .2s;
+    }
+
+    .ctrl:hover {
+      border-color: var(--txt);
+      color: var(--txt);
+    }
+
+    #btn-start {
+      border-color: var(--acc);
+      color: var(--acc);
+      padding: 14px 52px;
+      font-size: 13px;
+      letter-spacing: 3px;
+      position: relative;
+      overflow: hidden;
+      transition: all .22s, border-color var(--speed) var(--ease), color var(--speed) var(--ease);
+    }
+
+    #btn-start::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--acc);
+      opacity: 0;
+      transition: opacity .2s
+    }
+
+    #btn-start:hover::before {
+      opacity: .09
+    }
+
+    #btn-start:hover {
+      box-shadow: 0 0 26px var(--glow)
+    }
+
+    #btn-start.paused {
+      border-color: #ff6060;
+      color: #ff6060
+    }
+
+    #btn-start .lb {
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ── DOTS + XP ───────────────────────────────────────── */
+    #cycle-dots {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+
+    .c-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      border: 1px solid var(--mut);
+      transition: all .35s
+    }
+
+    .c-dot.on {
+      background: var(--acc);
+      border-color: var(--acc);
+      box-shadow: 0 0 9px var(--glow)
+    }
+
+    #cycle-lbl {
+      text-align: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      color: var(--mut);
+      letter-spacing: 1px;
+      margin-bottom: 14px;
+      transition: color var(--speed) var(--ease);
+    }
+
+    #xp-row {
+      display: flex;
+      justify-content: space-between;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      color: var(--mut);
+      margin-bottom: 5px;
+      transition: color var(--speed) var(--ease);
+    }
+
+    #xp-track {
+      height: 4px;
+      background: rgba(255, 255, 255, .08);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    #xp-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--ring1), var(--ring2));
+      border-radius: 2px;
+      transition: width 1.1s var(--ease), background var(--speed) var(--ease);
+      box-shadow: 0 0 6px var(--glow)
+    }
+
+    /* ── STATS ───────────────────────────────────────────── */
+    #stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+    }
+
+    .st-box {
+      background: var(--surfl);
+      border: 1px solid var(--borderl);
+      border-radius: 10px;
+      padding: 14px 10px;
+      text-align: center;
+      transition: background var(--speed) var(--ease), border-color var(--speed) var(--ease);
+    }
+
+    .st-v {
+      font-family: 'Playfair Display', serif;
+      font-size: 30px;
+      font-weight: 600;
+      color: var(--acc);
+      line-height: 1;
+      text-shadow: 0 0 10px var(--glow);
+      transition: color var(--speed) var(--ease), text-shadow var(--speed) var(--ease)
+    }
+
+    .st-l {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 8px;
+      color: var(--mut);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-top: 4px;
+      transition: color var(--speed) var(--ease);
+    }
+
+    /* ── BOSS ────────────────────────────────────────────── */
+    #boss-card {
+      display: none
+    }
+
+    #boss-card.show {
+      display: block
+    }
+
+    #boss-hdr {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+
+    #boss-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--acc);
+      text-shadow: 0 0 14px var(--glow);
+      transition: color var(--speed) var(--ease), text-shadow var(--speed) var(--ease)
+    }
+
+    #boss-phase {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      color: var(--mut);
+      letter-spacing: 2px;
+      margin-top: 3px;
+      transition: color var(--speed) var(--ease);
+    }
+
+    #boss-ico {
+      font-size: 48px;
+      line-height: 1
+    }
+
+    #hp-bar-bg {
+      height: 13px;
+      background: rgba(255, 255, 255, .07);
+      border-radius: 6px;
+      overflow: hidden;
+      border: 1px solid var(--borderl);
+      margin-bottom: 7px;
+    }
+
+    #hp-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--acc2), var(--acc));
+      transition: width .7s var(--ease), background var(--speed) var(--ease);
+      box-shadow: 0 0 12px var(--glow);
+      position: relative
+    }
+
+    #hp-bar-fill::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(90deg, transparent, transparent 8px, rgba(0, 0, 0, .16) 8px, rgba(0, 0, 0, .16) 9px);
+    }
+
+    #hp-meta {
+      display: flex;
+      justify-content: space-between;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      color: var(--mut);
+      transition: color var(--speed) var(--ease);
+    }
+
+    #boss-victory {
+      display: none;
+      text-align: center;
+      font-family: 'Cinzel Decorative', serif;
+      font-size: 20px;
+      color: var(--acc);
+      text-shadow: 0 0 22px var(--glow);
+      padding: 8px 0;
+      transition: color var(--speed) var(--ease), text-shadow var(--speed) var(--ease);
+    }
+
+    /* ── RESUME BANNER ───────────────────────────────────── */
+    #res-banner {
+      display: none;
+      background: var(--surfl);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      margin-bottom: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--acc);
+      align-items: center;
+      gap: 10px;
+      position: relative;
+      z-index: 2;
+    }
+
+    #res-banner.show {
+      display: flex
+    }
+
+    #res-banner span {
+      flex: 1
+    }
+
+    #btn-res {
+      background: var(--surfl);
+      border: 1px solid var(--acc);
+      color: var(--acc);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      padding: 6px 12px;
+      cursor: pointer;
+      border-radius: 6px;
+      letter-spacing: 1px;
+      text-transform: uppercase
+    }
+
+    #btn-dis {
+      background: none;
+      border: none;
+      color: var(--mut);
+      cursor: pointer;
+      font-size: 18px;
+      padding: 0;
+      line-height: 1
+    }
+
+    /* ── ANALYTICS ───────────────────────────────────────── */
+    /* wk-chart replaced by canvas wk-canvas */
+    #an-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 12px
+    }
+
+    .an-box {
+      background: var(--surfl);
+      border: 1px solid var(--borderl);
+      border-radius: 10px;
+      padding: 14px;
+      transition: background var(--speed) var(--ease), border-color var(--speed) var(--ease)
+    }
+
+    .an-v {
+      font-family: 'Playfair Display', serif;
+      font-size: 28px;
+      font-weight: 600;
+      color: var(--acc);
+      text-shadow: 0 0 8px var(--glow);
+      transition: color var(--speed) var(--ease), text-shadow var(--speed) var(--ease)
+    }
+
+    .an-l {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 8px;
+      color: var(--mut);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-top: 4px;
+      transition: color var(--speed) var(--ease)
+    }
+
+    #td-row {
+      display: flex;
+      justify-content: space-between;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      color: var(--mut);
+      margin-bottom: 5px;
+      transition: color var(--speed) var(--ease)
+    }
+
+    #td-track {
+      height: 6px;
+      background: rgba(255, 255, 255, .07);
+      border-radius: 3px;
+      overflow: hidden
+    }
+
+    #td-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--ring1), var(--ring2));
+      border-radius: 3px;
+      transition: width .9s var(--ease), background var(--speed) var(--ease);
+      box-shadow: 0 0 6px var(--glow)
+    }
+
+    /* ── ACHIEVEMENTS ────────────────────────────────────── */
+    #ach-ctr {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      color: var(--mut);
+      text-align: right;
+      margin-bottom: 10px;
+      transition: color var(--speed) var(--ease)
+    }
+
+    #ach-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px
+    }
+
+    .ach {
+      background: var(--surfl);
+      border: 1px solid var(--borderl);
+      border-radius: 10px;
+      padding: 13px;
+      opacity: .28;
+      transition: all .4s
+    }
+
+    .ach.done {
+      opacity: 1;
+      border-color: var(--acc);
+      background: var(--surf);
+      box-shadow: 0 0 10px var(--glow)
+    }
+
+    .a-ico {
+      font-size: 26px;
+      margin-bottom: 5px
+    }
+
+    .a-nm {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--txt);
+      font-weight: 500;
+      letter-spacing: .3px;
+      transition: color var(--speed) var(--ease)
+    }
+
+    .a-dc {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--mut);
+      margin-top: 2px;
+      line-height: 1.4;
+      transition: color var(--speed) var(--ease)
+    }
+
+    .a-xp {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      color: var(--acc);
+      margin-top: 5px;
+      transition: color var(--speed) var(--ease)
+    }
+
+    /* ── TASK MANAGER ────────────────────────────────────── */
+    #task-input-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 10px
+    }
+
+    #task-input {
+      flex: 1;
+      background: var(--surfl);
+      border: 1px solid var(--border);
+      color: var(--txt);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      padding: 10px 13px;
+      border-radius: 8px;
+      outline: none;
+      transition: border-color .2s, background var(--speed) var(--ease)
+    }
+
+    #task-input:focus {
+      border-color: var(--acc)
+    }
+
+    #task-input::placeholder {
+      color: var(--mut);
+      opacity: .7
+    }
+
+    #task-pomo-sel {
+      width: 58px;
+      background: var(--surfl);
+      border: 1px solid var(--border);
+      color: var(--txt);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      padding: 10px 6px;
+      border-radius: 8px;
+      outline: none;
+      -webkit-appearance: none;
+      text-align: center
+    }
+
+    #btn-add-task {
+      background: transparent;
+      border: 1px solid var(--acc);
+      color: var(--acc);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 1px;
+      padding: 10px 16px;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: all .2s;
+      white-space: nowrap
+    }
+
+    #btn-add-task:hover {
+      background: var(--surfl);
+      box-shadow: 0 0 10px var(--glow)
+    }
+
+    #task-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 320px;
+      overflow-y: auto
+    }
+
+    #task-list::-webkit-scrollbar {
+      width: 3px
+    }
+
+    #task-list::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 2px
+    }
+
+    .task-item {
+      background: var(--surfl);
+      border: 1px solid var(--borderl);
+      border-radius: 10px;
+      padding: 11px 13px;
+      cursor: grab;
+      transition: all .2s;
+      position: relative;
+      overflow: hidden;
+      user-select: none;
+    }
+
+    .task-item:active {
+      cursor: grabbing
+    }
+
+    .task-item.done {
+      opacity: .45
+    }
+
+    .task-item.done .task-title {
+      text-decoration: line-through
+    }
+
+    .task-item.active-task {
+      border-color: var(--acc);
+      box-shadow: 0 0 14px var(--glow);
+      background: var(--surf)
+    }
+
+    .task-item.active-task::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: var(--acc);
+      box-shadow: 0 0 8px var(--glow)
+    }
+
+    .task-item.dragging {
+      opacity: .4;
+      transform: scale(.97)
+    }
+
+    .task-item.drag-over {
+      border-color: var(--acc2);
+      transform: translateY(-2px)
+    }
+
+    .task-row1 {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px
+    }
+
+    .task-check {
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+      border: 1px solid var(--mut);
+      background: transparent;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all .2s
+    }
+
+    .task-check:hover {
+      border-color: var(--acc)
+    }
+
+    .task-check.checked {
+      background: var(--acc);
+      border-color: var(--acc)
+    }
+
+    .task-check.checked::after {
+      content: '✓';
+      color: #fff;
+      font-size: 9px;
+      font-weight: 700
+    }
+
+    .task-title {
+      flex: 1;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--txt);
+      transition: color var(--speed) var(--ease)
+    }
+
+    .task-pomo-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      color: var(--mut);
+      background: var(--surfl);
+      border: 1px solid var(--borderl);
+      border-radius: 4px;
+      padding: 2px 6px;
+      white-space: nowrap
+    }
+
+    .task-del {
+      background: none;
+      border: none;
+      color: var(--mut);
+      cursor: pointer;
+      font-size: 14px;
+      padding: 0;
+      line-height: 1;
+      opacity: .6
+    }
+
+    .task-del:hover {
+      color: #ff6060;
+      opacity: 1
+    }
+
+    .task-edit {
+      background: none;
+      border: none;
+      color: var(--mut);
+      cursor: pointer;
+      font-size: 13px;
+      padding: 0 2px;
+      line-height: 1;
+      opacity: .5
+    }
+
+    .task-edit:hover {
+      color: var(--acc);
+      opacity: 1
+    }
+
+    .task-set-active {
+      background: none;
+      border: 1px solid var(--borderl);
+      color: var(--mut);
+      cursor: pointer;
+      font-size: 9px;
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: .5px;
+      transition: all .2s
+    }
+
+    .task-set-active:hover {
+      border-color: var(--acc);
+      color: var(--acc)
+    }
+
+    .task-prog-bg {
+      height: 3px;
+      background: rgba(255, 255, 255, .08);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-top: 4px
+    }
+
+    .task-prog-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--ring1), var(--ring2));
+      border-radius: 2px;
+      transition: width .5s var(--ease), background var(--speed) var(--ease)
+    }
+
+    #task-empty {
+      text-align: center;
+      padding: 22px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--mut);
+      opacity: .6
+    }
+
+    #task-stats-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--borderl)
+    }
+
+    .task-stat {
+      flex: 1;
+      text-align: center;
+      font-family: 'JetBrains Mono', monospace
+    }
+
+    .task-stat-v {
+      font-size: 20px;
+      font-family: 'Playfair Display', serif;
+      color: var(--acc)
+    }
+
+    .task-stat-l {
+      font-size: 8px;
+      color: var(--mut);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-top: 2px
+    }
+
+    #active-task-banner {
+      display: none;
+      background: var(--surfl);
+      border: 1px solid var(--acc);
+      border-radius: 8px;
+      padding: 9px 14px;
+      margin-bottom: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--acc);
+      align-items: center;
+      gap: 8px
+    }
+
+    #active-task-banner.show {
+      display: flex
+    }
+
+    #atb-ico {
+      font-size: 14px
+    }
+
+    #atb-name {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap
+    }
+
+    #atb-prog {
+      font-size: 9px;
+      color: var(--mut);
+      white-space: nowrap
+    }
+
+    /* ── DAILY QUESTS ────────────────────────────────────── */
+    #quest-date {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      color: var(--mut);
+      margin-bottom: 12px;
+      text-align: right
+    }
+
+    .quest-item {
+      background: var(--surfl);
+      border: 1px solid var(--borderl);
+      border-radius: 10px;
+      padding: 12px 14px;
+      margin-bottom: 8px;
+      transition: all .3s
+    }
+
+    .quest-item.done {
+      border-color: var(--acc);
+      box-shadow: 0 0 8px var(--glow)
+    }
+
+    .quest-row1 {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 7px
+    }
+
+    .quest-ico {
+      font-size: 18px
+    }
+
+    .quest-txt {
+      flex: 1;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--txt);
+      transition: color var(--speed) var(--ease)
+    }
+
+    .quest-xp {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      color: var(--acc);
+      background: var(--surfl);
+      border: 1px solid var(--borderl);
+      border-radius: 4px;
+      padding: 2px 7px;
+      white-space: nowrap
+    }
+
+    .quest-done-mark {
+      font-size: 14px
+    }
+
+    .quest-prog-bg {
+      height: 5px;
+      background: rgba(255, 255, 255, .08);
+      border-radius: 3px;
+      overflow: hidden
+    }
+
+    .quest-prog-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--ring1), var(--ring2));
+      border-radius: 3px;
+      transition: width .6s var(--ease), background var(--speed) var(--ease);
+      box-shadow: 0 0 5px var(--glow)
+    }
+
+    .quest-prog-lbl {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      color: var(--mut);
+      margin-top: 4px;
+      text-align: right;
+      transition: color var(--speed) var(--ease)
+    }
+
+    #quest-all-done {
+      display: none;
+      text-align: center;
+      padding: 14px;
+      font-family: 'Playfair Display', serif;
+      font-size: 18px;
+      color: var(--acc);
+      text-shadow: 0 0 14px var(--glow)
+    }
+
+    #quest-all-done.show {
+      display: block
+    }
+
+    #quest-bonus-xp {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--txt2);
+      margin-top: 5px
+    }
+
+    /* ── FOCUS MODE ──────────────────────────────────────── */
+    #focus-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      background: linear-gradient(160deg, var(--bg1), var(--bg2), var(--bg3));
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .6s var(--ease), background var(--speed) var(--ease);
+    }
+
+    #focus-overlay.show {
+      opacity: 1;
+      pointer-events: all
+    }
+
+    #focus-ring-wrap {
+      position: relative;
+      margin-bottom: 24px
+    }
+
+    #focus-time {
+      font-family: 'Playfair Display', serif;
+      font-size: 82px;
+      font-weight: 300;
+      color: var(--txt);
+      letter-spacing: -3px;
+      text-align: center;
+      text-shadow: 0 0 40px var(--glow);
+      transition: color var(--speed) var(--ease)
+    }
+
+    #focus-mode-lbl {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 5px;
+      color: var(--acc);
+      text-align: center;
+      margin-top: 8px;
+      text-transform: uppercase;
+      transition: color var(--speed) var(--ease)
+    }
+
+    #focus-task-name {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: 18px;
+      color: var(--txt2);
+      text-align: center;
+      margin-top: 16px;
+      max-width: 360px;
+      opacity: .8;
+      transition: color var(--speed) var(--ease)
+    }
+
+    #focus-controls {
+      display: flex;
+      gap: 12px;
+      margin-top: 28px
+    }
+
+    #focus-pause-btn {
+      background: transparent;
+      border: 1px solid var(--acc);
+      color: var(--acc);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      letter-spacing: 3px;
+      padding: 14px 50px;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: all .2s
+    }
+
+    #focus-pause-btn:hover {
+      box-shadow: 0 0 20px var(--glow)
+    }
+
+    #focus-exit-btn {
+      background: transparent;
+      border: 1px solid var(--mut);
+      color: var(--mut);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      padding: 14px 20px;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: all .2s
+    }
+
+    #focus-exit-btn:hover {
+      border-color: var(--txt);
+      color: var(--txt)
+    }
+
+    #focus-fs-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: transparent;
+      border: 1px solid var(--borderl);
+      color: var(--mut);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      padding: 7px 12px;
+      cursor: pointer;
+      border-radius: 7px;
+      transition: all .2s
+    }
+
+    #focus-fs-btn:hover {
+      border-color: var(--acc);
+      color: var(--acc)
+    }
+
+    #focus-streak-wrap {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      color: var(--mut);
+      letter-spacing: 2px;
+      margin-top: 18px;
+      opacity: .6
+    }
+
+    #focus-svg {
+      filter: drop-shadow(0 0 22px var(--glow));
+      transition: filter var(--speed) var(--ease)
+    }
+
+    #focus-ring-prog {
+      stroke: var(--ring1);
+      stroke-linecap: round;
+      transition: stroke-dashoffset 1s linear, stroke var(--speed) var(--ease)
+    }
+
+    #focus-ring-prog.brk {
+      stroke: var(--ring2)
+    }
+
+    #focus-ring-track {
+      stroke: rgba(255, 255, 255, .06)
+    }
+
+    #btn-focus-mode {
+      background: transparent;
+      border: 1px solid var(--borderl);
+      color: var(--mut);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 1px;
+      padding: 7px 12px;
+      cursor: pointer;
+      border-radius: 7px;
+      transition: all .2s;
+      text-transform: uppercase
+    }
+
+    #btn-focus-mode:hover {
+      border-color: var(--acc);
+      color: var(--acc)
+    }
+
+    /* ══ CALENDAR — Premium Heatmap ═══════════════════════ */
+    /* Nav bar */
+    #cal-nav-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    #cal-month-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--acc);
+      text-shadow: 0 0 12px var(--glow);
+      letter-spacing: .5px;
+      transition: color var(--speed) var(--ease), text-shadow var(--speed) var(--ease);
+    }
+
+    .cal-arrow {
+      background: var(--surfl);
+      border: 1px solid var(--borderl);
+      color: var(--txt2);
+      font-size: 18px;
+      width: 36px;
+      height: 36px;
+      cursor: pointer;
+      border-radius: 9px;
+      transition: all .2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
+
+    .cal-arrow:hover {
+      border-color: var(--acc);
+      color: var(--acc);
+      box-shadow: 0 0 10px var(--glow);
+      background: var(--surf)
+    }
+
+    /* Streak summary banner */
+    #cal-streak-banner {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 14px;
+      padding: 8px 14px;
+      background: var(--surfl);
+      border: 1px solid var(--borderl);
+      border-radius: 10px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--txt2);
+      transition: all var(--speed) var(--ease);
+    }
+
+    #cal-streak-banner .csb-fire {
+      font-size: 16px
+    }
+
+    #cal-streak-banner .csb-val {
+      font-family: 'Playfair Display', serif;
+      font-size: 18px;
+      color: var(--acc);
+      font-weight: 600
+    }
+
+    #cal-streak-banner .csb-sep {
+      color: var(--borderl);
+      font-size: 16px
+    }
+
+    /* Day-of-week header */
+    #cal-dow-row {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+      margin-bottom: 5px;
+    }
+
+    .cal-dow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 8px;
+      color: var(--mut);
+      text-align: center;
+      padding: 2px 0;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      transition: color var(--speed) var(--ease);
+    }
+
+    /* Grid */
+    #cal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+      margin-bottom: 14px;
+      /* slide animation */
+      animation: calSlideIn .28s ease forwards;
+    }
+
+    @keyframes calSlideIn {
+      from {
+        opacity: 0;
+        transform: translateX(18px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0)
+      }
+    }
+
+    @keyframes calSlideOut {
+      from {
+        opacity: 1;
+        transform: translateX(0)
+      }
+
+      to {
+        opacity: 0;
+        transform: translateX(-18px)
+      }
+    }
+
+    .cal-grid-exit {
+      animation: calSlideOut .18s ease forwards !important
+    }
+
+    /* Day cells — circular heatmap style */
+    .cal-day {
+      aspect-ratio: 1;
+      border-radius: 50%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 500;
+      cursor: pointer;
+      position: relative;
+      transition: transform .18s ease, box-shadow .18s ease, background .25s ease;
+      border: 1.5px solid transparent;
+      color: var(--mut);
+      background: transparent;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .cal-day:hover {
+      transform: scale(1.15);
+      z-index: 2
+    }
+
+    .cal-day:active {
+      transform: scale(.95)
+    }
+
+    /* Other-month cells */
+    .cal-day.other-month {
+      opacity: .18;
+      cursor: default;
+      pointer-events: none
+    }
+
+    /* Today ring */
+    .cal-day.today {
+      border-color: var(--acc) !important;
+      color: var(--acc) !important;
+      font-weight: 700;
+    }
+
+    /* Productivity levels — 0 sessions */
+    .cal-day.lvl-0 {
+      background: transparent;
+      color: var(--mut)
+    }
+
+    /* 1–2 sessions */
+    .cal-day.lvl-1 {
+      background: rgba(var(--partcol), .12);
+      color: var(--txt2);
+    }
+
+    .cal-day.lvl-1:hover {
+      box-shadow: 0 0 10px rgba(var(--partcol), .25)
+    }
+
+    /* 3–5 sessions */
+    .cal-day.lvl-2 {
+      background: rgba(var(--partcol), .28);
+      color: var(--txt);
+      box-shadow: 0 0 6px rgba(var(--partcol), .2);
+    }
+
+    .cal-day.lvl-2:hover {
+      box-shadow: 0 0 14px rgba(var(--partcol), .4)
+    }
+
+    /* 6–9 sessions */
+    .cal-day.lvl-3 {
+      background: rgba(var(--partcol), .50);
+      color: var(--acc);
+      box-shadow: 0 0 10px rgba(var(--partcol), .35);
+      animation: calGlowPulse 3s ease-in-out infinite;
+    }
+
+    /* 10+ sessions */
+    .cal-day.lvl-4 {
+      background: rgba(var(--partcol), .75);
+      color: var(--acc);
+      font-weight: 700;
+      box-shadow: 0 0 16px rgba(var(--partcol), .55), 0 0 32px rgba(var(--partcol), .2);
+      animation: calGlowPulse 2s ease-in-out infinite;
+    }
+
+    @keyframes calGlowPulse {
+
+      0%,
+      100% {
+        box-shadow: 0 0 10px rgba(var(--partcol), .35)
+      }
+
+      50% {
+        box-shadow: 0 0 20px rgba(var(--partcol), .6), 0 0 36px rgba(var(--partcol), .25)
+      }
+    }
+
+    /* Streak chain — pip dot at bottom of circle */
+    .cal-day.streak-day::after {
+      content: '🔥';
+      position: absolute;
+      bottom: -2px;
+      right: -2px;
+      font-size: 7px;
+      line-height: 1;
+    }
+
+    /* Streak chain connector between consecutive days */
+    .cal-day.streak-start::before,
+    .cal-day.streak-mid::before,
+    .cal-day.streak-end::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      height: 3px;
+      background: linear-gradient(90deg, var(--ring1), var(--ring2));
+      opacity: .45;
+      z-index: -1;
+    }
+
+    .cal-day.streak-start::before {
+      left: 50%;
+      right: -6px
+    }
+
+    .cal-day.streak-mid::before {
+      left: -6px;
+      right: -6px
+    }
+
+    .cal-day.streak-end::before {
+      left: -6px;
+      right: 50%
+    }
+
+    /* Session count mini label */
+    .cal-day-num {
+      font-size: 11px;
+      line-height: 1;
+      pointer-events: none
+    }
+
+    .cal-day-count {
+      font-size: 6.5px;
+      line-height: 1;
+      margin-top: 2px;
+      opacity: .75;
+      font-weight: 400;
+      pointer-events: none;
+    }
+
+    /* Note pin */
+    .cal-note-pin {
+      position: absolute;
+      top: 1px;
+      left: 1px;
+      font-size: 7px;
+      line-height: 1;
+      opacity: .85;
+    }
+
+    /* Tooltip */
+    #cal-tooltip {
+      position: fixed;
+      z-index: 9000;
+      pointer-events: none;
+      background: var(--surf);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      padding: 10px 14px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--txt);
+      line-height: 1.7;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, .35), 0 0 16px var(--glow);
+      transition: opacity .15s ease;
+      opacity: 0;
+      min-width: 148px;
+    }
+
+    #cal-tooltip.visible {
+      opacity: 1
+    }
+
+    #cal-tooltip-date {
+      font-family: 'Playfair Display', serif;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--acc);
+      margin-bottom: 5px
+    }
+
+    .cal-tip-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--txt2)
+    }
+
+    .cal-tip-ico {
+      font-size: 12px
+    }
+
+    /* Legend */
+    #cal-legend {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+      padding: 8px 0;
+      border-top: 1px solid var(--borderl);
+    }
+
+    #cal-legend-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 8px;
+      color: var(--mut);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-right: 4px;
+    }
+
+    .cl-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 8px;
+      color: var(--mut);
+    }
+
+    .cl-sw {
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .cl-0 {
+      background: var(--surfl);
+      border: 1px solid var(--borderl);
+    }
+
+    .cl-1 {
+      background: rgba(var(--partcol), .14);
+    }
+
+    .cl-2 {
+      background: rgba(var(--partcol), .30);
+    }
+
+    .cl-3 {
+      background: rgba(var(--partcol), .52);
+    }
+
+    .cl-4 {
+      background: rgba(var(--partcol), .78);
+      box-shadow: 0 0 6px rgba(var(--partcol), .5);
+    }
+
+    /* Day detail panel */
+    #cal-detail-panel {
+      background: var(--surfl);
+      border: 1px solid var(--borderl);
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      transition: all .25s;
+      min-height: 52px;
+    }
+
+    #cal-detail-panel.has-data {
+      border-color: var(--acc);
+      box-shadow: 0 0 10px var(--glow)
+    }
+
+    #cdp-date {
+      font-family: 'Playfair Display', serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--acc);
+      margin-bottom: 8px
+    }
+
+    #cdp-stats {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap
+    }
+
+    .cdp-stat {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      font-family: 'JetBrains Mono', monospace
+    }
+
+    .cdp-stat-v {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--txt);
+      font-family: 'Playfair Display', serif
+    }
+
+    .cdp-stat-l {
+      font-size: 8px;
+      color: var(--mut);
+      letter-spacing: 1px;
+      text-transform: uppercase
+    }
+
+    #cdp-note {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--borderl);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--txt2);
+      font-style: italic;
+      line-height: 1.5;
+    }
+
+    #cdp-empty {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--mut);
+      opacity: .6;
+      text-align: center;
+      padding: 4px 0;
+    }
+
+    /* Note editor */
+    #cal-plan-wrap {
+      margin-top: 8px
+    }
+
+    #cal-plan-wrap textarea {
+      width: 100%;
+      background: var(--surfl);
+      border: 1px solid var(--borderl);
+      color: var(--txt);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      padding: 9px 12px;
+      border-radius: 9px;
+      resize: vertical;
+      min-height: 52px;
+      outline: none;
+      transition: border-color .2s, background var(--speed) var(--ease);
+      display: block;
+    }
+
+    #cal-plan-wrap textarea:focus {
+      border-color: var(--acc)
+    }
+
+    #cal-plan-btns {
+      display: flex;
+      gap: 8px;
+      margin-top: 7px
+    }
+
+    #cal-plan-save {
+      flex: 1;
+      background: transparent;
+      border: 1px solid var(--acc);
+      color: var(--acc);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      padding: 7px;
+      cursor: pointer;
+      border-radius: 7px;
+      letter-spacing: 1px;
+      transition: all .2s;
+    }
+
+    #cal-plan-save:hover {
+      background: var(--surfl);
+      box-shadow: 0 0 10px var(--glow)
+    }
+
+    #cal-plan-clear {
+      background: transparent;
+      border: 1px solid var(--borderl);
+      color: var(--mut);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      padding: 7px 12px;
+      cursor: pointer;
+      border-radius: 7px;
+      transition: all .2s;
+    }
+
+    #cal-plan-clear:hover {
+      border-color: var(--mut);
+      color: var(--txt)
+    }
+
+    /* ── ENHANCED ACHIEVEMENT POPUP ──────────────────────── */
+    #ach-popup {
+      position: fixed;
+      top: 80px;
+      right: 20px;
+      z-index: 9998;
+      background: var(--surf);
+      backdrop-filter: blur(22px);
+      border: 1px solid var(--acc);
+      border-radius: 12px;
+      padding: 14px 18px;
+      min-width: 220px;
+      max-width: 280px;
+      box-shadow: 0 0 30px var(--glow), 0 8px 40px rgba(0, 0, 0, .5);
+      transform: translateX(120%);
+      transition: transform .5s cubic-bezier(.34, 1.56, .64, 1),
+        background var(--speed) var(--ease), border-color var(--speed) var(--ease);
+    }
+
+    #ach-popup.show {
+      transform: translateX(0)
+    }
+
+    #ach-pop-ico {
+      font-size: 32px;
+      margin-bottom: 6px
+    }
+
+    #ach-pop-title {
+      font-family: 'Cinzel Decorative', serif;
+      font-size: 13px;
+      color: var(--acc);
+      margin-bottom: 3px;
+      text-shadow: 0 0 12px var(--glow);
+      transition: color var(--speed) var(--ease), text-shadow var(--speed) var(--ease)
+    }
+
+    #ach-pop-name {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--txt);
+      font-weight: 500;
+      margin-bottom: 4px
+    }
+
+    #ach-pop-desc {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--mut);
+      line-height: 1.4;
+      margin-bottom: 8px
+    }
+
+    #ach-pop-xp {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--acc);
+      background: var(--surfl);
+      border: 1px solid var(--borderl);
+      border-radius: 5px;
+      padding: 3px 8px;
+      display: inline-block
+    }
+
+    @keyframes achShine {
+      0% {
+        transform: translateX(-100%)
+      }
+
+      100% {
+        transform: translateX(200%)
+      }
+    }
+
+    #ach-popup::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .08), transparent);
+      transform: translateX(-100%);
+      border-radius: 12px;
+      overflow: hidden
+    }
+
+    #ach-popup.show::after {
+      animation: achShine 1s .3s ease forwards
+    }
+
+    /* ── ENHANCED ANALYTICS ──────────────────────────────── */
+    #an-all-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 12px
+    }
+
+    #an-canvas-wrap {
+      margin: 8px 0 14px
+    }
+
+    #an-canvas {
+      width: 100%;
+      height: 120px;
+      display: block;
+      border-radius: 8px
+    }
+
+    #an-legend {
+      display: flex;
+      justify-content: space-between;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 8px;
+      color: var(--mut);
+      margin-top: 4px
+    }
+
+    /* ── PLAYLIST ────────────────────────────────────────── */
+    #upload-lbl {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--acc);
+      border: 1px dashed var(--border);
+      padding: 12px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      transition: all .25s, border-color var(--speed) var(--ease), color var(--speed) var(--ease);
+      background: var(--surfl);
+    }
+
+    #upload-lbl:hover {
+      border-color: var(--acc);
+      box-shadow: 0 0 12px var(--glow);
+      background: var(--surf)
+    }
+
+    #file-in {
+      display: none
+    }
+
+    #pl-list {
+      max-height: 145px;
+      overflow-y: auto;
+      margin-bottom: 10px
+    }
+
+    #pl-list::-webkit-scrollbar {
+      width: 3px
+    }
+
+    #pl-list::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 2px
+    }
+
+    .pl-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--mut);
+      transition: all .2s;
+      margin-bottom: 3px;
+      background: var(--surfl);
+      border: 1px solid var(--borderl);
+    }
+
+    .pl-item:hover {
+      border-color: var(--acc);
+      color: var(--acc)
+    }
+
+    .pl-item.active {
+      border-color: var(--acc);
+      color: var(--acc);
+      background: var(--surf);
+      box-shadow: 0 0 8px var(--glow)
+    }
+
+    .pl-num {
+      font-size: 9px;
+      opacity: .5;
+      min-width: 16px
+    }
+
+    .pl-nm {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap
+    }
+
+    .pl-del {
+      background: none;
+      border: none;
+      color: var(--mut);
+      cursor: pointer;
+      font-size: 15px;
+      padding: 0 2px;
+      line-height: 1
+    }
+
+    .pl-del:hover {
+      color: #ff6060
+    }
+
+    #pl-empty {
+      text-align: center;
+      padding: 22px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--mut);
+      opacity: .6;
+      transition: color var(--speed) var(--ease)
+    }
+
+    #pl-ctrl {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding-top: 10px;
+      border-top: 1px solid var(--borderl);
+      transition: border-color var(--speed) var(--ease)
+    }
+
+    .pl-btn {
+      background: transparent;
+      border: 1px solid var(--borderl);
+      color: var(--mut);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      padding: 8px 12px;
+      cursor: pointer;
+      border-radius: 7px;
+      transition: all .2s
+    }
+
+    .pl-btn:hover,
+    .pl-btn.act {
+      border-color: var(--acc);
+      color: var(--acc)
+    }
+
+    #pl-now-wrap {
+      flex: 1;
+      overflow: hidden
+    }
+
+    #pl-now {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      color: var(--mut);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      transition: color var(--speed) var(--ease)
+    }
+
+    #pl-seek-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 3px
+    }
+
+    #pl-seek {
+      width: 100%;
+      height: 3px;
+      accent-color: var(--acc);
+      cursor: pointer;
+      margin-bottom: 4px
+    }
+
+    #vol-wrap {
+      display: flex;
+      align-items: center;
+      gap: 6px
+    }
+
+    #vol-lbl {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      color: var(--mut)
+    }
+
+    #pl-vol {
+      width: 65px;
+      accent-color: var(--acc);
+      cursor: pointer
+    }
+
+    /* alarm section */
+    #alarm-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--borderl)
+    }
+
+    #alarm-info {
+      flex: 1;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--mut);
+      line-height: 1.5;
+      transition: color var(--speed) var(--ease)
+    }
+
+    #btn-test-alarm {
+      white-space: nowrap
+    }
+
+    #alarm-vol-wrap {
+      display: flex;
+      align-items: center;
+      gap: 6px
+    }
+
+    #alarm-vol-lbl {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      color: var(--mut)
+    }
+
+    #alarm-vol {
+      width: 55px;
+      accent-color: var(--acc);
+      cursor: pointer
+    }
+
+    /* ── SETTINGS ────────────────────────────────────────── */
+    #dur-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 14px
+    }
+
+    .si-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 5px
+    }
+
+    .si-lbl {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      color: var(--mut);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      transition: color var(--speed) var(--ease)
+    }
+
+    .si {
+      background: var(--surfl);
+      border: 1px solid var(--border);
+      color: var(--txt);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      padding: 8px 10px;
+      border-radius: 7px;
+      width: 100%;
+      outline: none;
+      transition: border-color .2s, background var(--speed) var(--ease);
+      -webkit-appearance: none
+    }
+
+    #task-pomo-sel {
+      background: var(--surfl);
+      border: 1px solid var(--border);
+      color: var(--txt);
+      font-family: 'JetBrains Mono', monospace;
+      padding: 10px 6px;
+      border-radius: 8px;
+      outline: none;
+      -webkit-appearance: none;
+      text-align: center;
+      cursor: pointer
+    }
+
+    .si:focus {
+      border-color: var(--acc)
+    }
+
+    #tog-row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap
+    }
+
+    .tog {
+      background: transparent;
+      border: 1px solid var(--mut);
+      color: var(--mut);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 1px;
+      padding: 7px 12px;
+      cursor: pointer;
+      border-radius: 7px;
+      transition: all .22s;
+      text-transform: uppercase
+    }
+
+    .tog:hover {
+      border-color: var(--acc);
+      color: var(--acc)
+    }
+
+    .tog.on {
+      border-color: var(--acc);
+      color: var(--acc);
+      background: var(--surfl);
+      box-shadow: 0 0 10px var(--glow)
+    }
+
+    .tog.danger.on {
+      border-color: #ff6060;
+      color: #ff6060;
+      background: rgba(255, 90, 90, .06);
+      box-shadow: 0 0 10px rgba(255, 90, 90, .3)
+    }
+
+    .danger-card {
+      border-color: rgba(255, 90, 90, .2) !important
+    }
+
+    .danger-card .sec-lbl {
+      color: #ff6060
+    }
+
+    /* ── NAV ─────────────────────────────────────────────── */
+    #nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      background: var(--surf);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border-top: 1px solid var(--border);
+      padding: 10px 16px 18px;
+      transition: background var(--speed) var(--ease), border-color var(--speed) var(--ease);
+    }
+
+    #nav-in {
+      max-width: 560px;
+      margin: 0 auto;
+      display: flex;
+      gap: 5px;
+    }
+
+    .nav-btn {
+      flex: 1;
+      background: transparent;
+      border: 1px solid var(--borderl);
+      color: var(--mut);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 8px;
+      letter-spacing: .5px;
+      padding: 9px 4px 7px;
+      cursor: pointer;
+      border-radius: 8px;
+      text-align: center;
+      text-transform: uppercase;
+      transition: all .22s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      ;
+      flex-shrink: 0
+    }
+
+    .nav-ico {
+      font-size: 15px;
+      line-height: 1
+    }
+
+    .nav-btn:hover {
+      border-color: var(--acc);
+      color: var(--acc)
+    }
+
+    .nav-btn.on {
+      border-color: var(--acc);
+      color: var(--acc);
+      background: var(--surfl);
+      box-shadow: 0 0 10px var(--glow)
+    }
+
+    .tab {
+      display: none
+    }
+
+    .tab.on {
+      display: block
+    }
+
+    /* ── TOAST ───────────────────────────────────────────── */
+    #toast {
+      position: fixed;
+      top: 22px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-100px);
+      background: var(--surf);
+      backdrop-filter: blur(22px);
+      border: 1px solid var(--acc);
+      border-radius: 10px;
+      padding: 11px 22px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--acc);
+      box-shadow: 0 0 26px var(--glow), 0 8px 32px rgba(0, 0, 0, .45);
+      z-index: 9999;
+      transition: transform .48s cubic-bezier(.34, 1.56, .64, 1),
+        background var(--speed) var(--ease), border-color var(--speed) var(--ease), color var(--speed) var(--ease);
+      white-space: nowrap;
+      text-align: center;
+      pointer-events: none;
+    }
+
+    #toast.show {
+      transform: translateX(-50%) translateY(0)
+    }
+
+    #ti {
+      font-size: 18px;
+      display: block;
+      margin-bottom: 3px
+    }
+
+    /* ── LEVEL-UP ────────────────────────────────────────── */
+    #lvl-ov {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, .88);
+      z-index: 500;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .4s;
+    }
+
+    #lvl-ov.show {
+      opacity: 1;
+      pointer-events: all
+    }
+
+    #lvl-box {
+      text-align: center;
+      transform: scale(.55);
+      transition: transform .65s cubic-bezier(.34, 1.56, .64, 1)
+    }
+
+    #lvl-ov.show #lvl-box {
+      transform: scale(1)
+    }
+
+    #lvl-ico {
+      font-size: 82px
+    }
+
+    #lvl-txt {
+      font-family: 'Cinzel Decorative', serif;
+      font-size: 44px;
+      color: var(--acc);
+      text-shadow: 0 0 32px var(--glow);
+      transition: color var(--speed) var(--ease), text-shadow var(--speed) var(--ease)
+    }
+
+    #lvl-sub {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--txt2);
+      letter-spacing: 4px;
+      margin-top: 10px;
+      transition: color var(--speed) var(--ease)
+    }
+
+    /* ── NOW PLAYING CHIP ────────────────────────────────── */
+    #np-chip {
+      position: fixed;
+      bottom: 80px;
+      right: 16px;
+      background: var(--surf);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      color: var(--acc);
+      z-index: 50;
+      display: none;
+      align-items: center;
+      gap: 7px;
+      max-width: 195px;
+      box-shadow: 0 0 12px var(--glow);
+      transition: background var(--speed) var(--ease), border-color var(--speed) var(--ease);
+    }
+
+    #np-chip.show {
+      display: flex
+    }
+
+    #np-ico {
+      font-size: 14px
+    }
+
+    #np-nm {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 9px
+    }
+
+    /* ── ANIMATIONS ──────────────────────────────────────── */
+    @keyframes bossHit {
+      0% {
+        transform: translateX(0)
+      }
+
+      20% {
+        transform: translateX(-9px) scale(1.08)
+      }
+
+      40% {
+        transform: translateX(9px)
+      }
+
+      60% {
+        transform: translateX(-5px)
+      }
+
+      80% {
+        transform: translateX(5px)
+      }
+
+      100% {
+        transform: translateX(0)
+      }
+    }
+
+    .hit {
+      animation: bossHit .5s ease
+    }
+
+    @keyframes alarmRing {
+
+      0%,
+      100% {
+        filter: drop-shadow(0 0 14px var(--glow))
+      }
+
+      50% {
+        filter: drop-shadow(0 0 42px var(--glow)) drop-shadow(0 0 70px var(--glow))
+      }
+    }
+
+    .alarming #ring-svg {
+      animation: alarmRing .7s ease-in-out 4
+    }
+
+    @keyframes dotPulse {
+
+      0%,
+      100% {
+        box-shadow: 0 0 6px var(--glow)
+      }
+
+      50% {
+        box-shadow: 0 0 18px var(--glow)
+      }
+    }
+
+    .c-dot.on {
+      animation: dotPulse 2.2s infinite
+    }
+
+    /* scrollbar */
+    ::-webkit-scrollbar {
+      width: 4px
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--borderl);
+      border-radius: 2px
+    }
+
+    @media(max-width:440px) {
+      #time-disp {
+        font-size: 50px
+      }
+
+      #logo {
+        font-size: 18px
+      }
+
+      #app {
+        padding: 18px 12px 116px
+      }
+    }
+  </style>
+</head>
+
+<body class="spring">
+
+  <!-- Layer 0: particles -->
+  <canvas id="fx-canvas"></canvas>
+  <canvas id="anim-canvas"></canvas>
+  <!-- Layer 1: season overlays -->
+  <div id="theme-overlay"></div>
+  <div id="frost-overlay"></div>
+  <div id="aurora-overlay"></div>
+  <div id="spring-shimmer"></div>
+
+  <!-- Toast -->
+  <div id="toast"><span id="ti"></span><span id="tm"></span></div>
+
+  <!-- Level-up overlay -->
+  <div id="lvl-ov">
+    <div id="lvl-box">
+      <div id="lvl-ico">✨</div>
+      <div id="lvl-txt">RANK UP</div>
+      <div id="lvl-rk"></div>
+    </div>
+  </div>s
+
+  <!-- Now playing chip -->
+  <div id="np-chip"><span id="np-ico">🎵</span><span id="np-nm">—</span></div>
+
+  <div id="app">
+    <!-- Header -->
+    <div id="hdr">
+      <div>
+        <div id="logo">Focusly</div>
+        <div id="logo-sub">// Turn Study Into Progress</div>
+      </div>
+      <div id="rank-wrap">
+        <div id="rank-name" style="color:#888">Pionts</div>
+        <div id="xp-disp">0 XP</div>
+      </div>
+    </div>
+    <!-- Live clock -->
+    <div id="datetime-bar">
+      <span id="dt-day"></span>
+      <span id="dt-date"></span>
+      <span id="dt-sep">·</span>
+      <span id="dt-time"></span>
+    </div>
+
+    <!-- Season Switcher -->
+    <div id="season-bar">
+      <button class="s-btn active" data-s="spring">🌸 Spring</button>
+      <button class="s-btn" data-s="summer">☀️ Summer</button>
+      <button class="s-btn " data-s="autumn">🍂 Autumn</button>
+      <button class="s-btn" data-s="winter">❄️ Winter</button>
+    </div>
+
+    <!-- Resume Banner -->
+    <div id="res-banner">
+      <span>⏮ Resume session? <strong id="res-t"></strong> remaining</span>
+      <button id="btn-res">Resume</button>
+      <button id="btn-dis">✕</button>
+    </div>
+
+    <!-- Active Task Banner (shown on timer tab when a task is active) -->
+    <div id="active-task-banner">
+      <span id="atb-ico">🎯</span>
+      <span id="atb-name">—</span>
+      <span id="atb-prog">0/1</span>
+    </div>
+
+    <!-- ══ TAB: TIMER ═══════════════════════════════════ -->
+    <div id="tab-timer" class="tab on">
+      <div class="card">
+        <div class="sec-lbl">Session</div>
+        <div id="mode-tabs">
+          <button class="m-tab active" data-mode="focus">🍅 Focus</button>
+          <button class="m-tab" data-mode="short">☕ Short</button>
+          <button class="m-tab" data-mode="long">🌙 Long</button>
+        </div>
+        <div id="ring-wrap">
+          <svg id="ring-svg" width="220" height="220" viewBox="0 0 220 220">
+            <defs>
+              <filter id="ring-glow-filter" x="-30%" y="-30%" width="160%" height="160%">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur" />
+                <feMerge>
+                  <feMergeNode in="blur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+            </defs>
+            <circle id="ring-track" cx="110" cy="110" r="96" fill="none" stroke-width="7" />
+            <circle id="ring-fill" cx="110" cy="110" r="96" fill="none" stroke-width="7" stroke-dasharray="603.19"
+              stroke-dashoffset="0" transform="rotate(-90 110 110)" filter="url(#ring-glow-filter)" />
+          </svg>
+          <div id="timer-ctr">
+            <div id="time-disp">25:00</div>
+            <div id="mode-disp">FOCUS TIME</div>
+            <div id="hc-lbl">⚠ HARDCORE</div>
+          </div>
+        </div>
+        <div id="controls">
+          <button class="ctrl" id="btn-reset">↺ Reset</button>
+          <button id="btn-start" class="ctrl"><span class="lb">▶ Start</span></button>
+          <button class="ctrl" id="btn-skip">⏭ Skip</button>
+        </div>
+        <div style="text-align:center;margin-bottom:10px">
+          <button id="btn-focus-mode">⊙ Enter Focus Mode</button>
+        </div>
+        <div id="cycle-dots">
+          <div class="c-dot" id="cd0"></div>
+          <div class="c-dot" id="cd1"></div>
+          <div class="c-dot" id="cd2"></div>
+          <div class="c-dot" id="cd3"></div>
+        </div>
+        <div id="cycle-lbl">0 / 4 · long break after 4 sessions</div>
+        <div id="xp-row"><span id="xp-cur">0 XP</span><span id="xp-nxt">→ 100 XP for Focused</span></div>
+        <div id="xp-track">
+          <div id="xp-fill" style="width:0%"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="sec-lbl">Stats</div>
+        <div id="stats-grid">
+          <div class="st-box">
+            <div class="st-v" id="sv-today">0</div>
+            <div class="st-l">Today</div>
+          </div>
+          <div class="st-box">
+            <div class="st-v" id="sv-streak">—</div>
+            <div class="st-l">Streak</div>
+          </div>
+          <div class="st-box">
+            <div class="st-v" id="sv-total">0</div>
+            <div class="st-l">All Time</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" id="boss-card">
+        <div class="sec-lbl">Boss Fight</div>
+        <div id="boss-hdr">
+          <div>
+            <div id="boss-name">Procrastination Demon</div>
+            <div id="boss-phase">Lurking in the shadows</div>
+          </div>
+          <div id="boss-ico">😈</div>
+        </div>
+        <div id="hp-bar-bg">
+          <div id="hp-bar-fill" style="width:100%"></div>
+        </div>
+        <div id="hp-meta"><span id="hp-lbl">500 / 500 HP</span><span>−100 HP per session</span></div>
+        <div id="boss-victory">✦ Demon Vanquished ✦</div>
+      </div>
+    </div>
+
+    <!-- ══ TAB: ANALYTICS ══════════════════════════════ -->
+    <div id="tab-analytics" class="tab">
+      <div class="card">
+        <div class="sec-lbl">This Week</div>
+        <div id="an-canvas-wrap"><canvas id="wk-canvas"></canvas></div>
+        <div id="an-grid">
+          <div class="an-box">
+            <div class="an-v" id="an-ws">—</div>
+            <div class="an-l">Sessions</div>
+          </div>
+          <div class="an-box">
+            <div class="an-v" id="an-wh">—</div>
+            <div class="an-l">Focus Time</div>
+          </div>
+          <div class="an-box">
+            <div class="an-v" id="an-st">—</div>
+            <div class="an-l">Day Streak</div>
+          </div>
+          <div class="an-box">
+            <div class="an-v" id="an-bd">—</div>
+            <div class="an-l">Best Day</div>
+          </div>
+        </div>
+        <div id="td-row"><span>Today's deep work</span><span id="td-lbl">0 / 120 min</span></div>
+        <div id="td-track">
+          <div id="td-fill" style="width:0%"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="sec-lbl">All Time</div>
+        <div id="an-grid-alltime" class="an-grid">
+          <div class="an-box">
+            <div class="an-v" id="an-tot">—</div>
+            <div class="an-l">Pomodoros</div>
+          </div>
+          <div class="an-box">
+            <div class="an-v" id="an-hrs">—</div>
+            <div class="an-l">Hours</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ TAB: ACHIEVEMENTS ═══════════════════════════ -->
+    <div id="tab-ach" class="tab">
+      <div class="card">
+        <div class="sec-lbl">Achievements</div>
+        <div id="ach-ctr">0 / 8 unlocked</div>
+        <div id="ach-grid"></div>
+      </div>
+    </div>
+
+    <!-- ══ TAB: MUSIC ═══════════════════════════════════ -->
+    <div id="tab-music" class="tab">
+      <div class="card">
+        <div class="sec-lbl">Playlist</div>
+        <label id="upload-lbl" for="file-in">＋ Upload Audio Files (MP3 · WAV · OGG · FLAC)</label>
+        <input type="file" id="file-in" multiple accept="audio/*">
+        <div id="pl-list">
+          <div id="pl-empty">No tracks yet. Upload files above to begin.</div>
+        </div>
+        <div id="pl-ctrl">
+          <button class="pl-btn" id="pl-prev" title="Previous">⏮</button>
+          <button class="pl-btn" id="pl-play" title="Play/Pause">▶</button>
+          <button class="pl-btn" id="pl-next" title="Next">⏭</button>
+          <div id="pl-now-wrap">
+            <div id="pl-now">Nothing playing</div>
+            <input type="range" id="pl-seek" min="0" max="100" step="0.1" value="0"
+              style="width:100%;height:3px;accent-color:var(--acc);cursor:pointer;margin-top:4px">
+          </div>
+          <div id="vol-wrap">
+            <span id="vol-lbl">VOL</span>
+            <input type="range" id="pl-vol" min="0" max="1" step="0.02" value="0.7">
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="sec-lbl">Alarm</div>
+        <div id="alarm-row">
+          <div id="alarm-info">
+            When a session ends: music pauses → alarm chimes → music resumes.
+            Alarm is synthesised via Web Audio API — no file needed.
+          </div>
+          <button class="ctrl" id="btn-test-alarm">🔔 Test</button>
+          <div id="alarm-vol-wrap">
+            <span id="alarm-vol-lbl">VOL</span>
+            <input type="range" id="alarm-vol" min="0" max="1" step="0.02" value="0.8">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ TAB: SETTINGS ════════════════════════════════ -->
+    <div id="tab-settings" class="tab">
+      <div class="card">
+        <div class="sec-lbl">Timer Durations</div>
+        <div id="dur-grid">
+          <div class="si-wrap">
+            <div class="si-lbl">Focus (min)</div><input class="si" id="si-f" type="number" min="1" max="90" value="25">
+          </div>
+          <div class="si-wrap">
+            <div class="si-lbl">Short Break</div><input class="si" id="si-s" type="number" min="1" max="30" value="5">
+          </div>
+          <div class="si-wrap">
+            <div class="si-lbl">Long Break</div><input class="si" id="si-l" type="number" min="5" max="60" value="15">
+          </div>
+        </div>
+        <button class="ctrl" id="btn-apply" style="width:100%;letter-spacing:2px">Apply Settings</button>
+      </div>
+      <div class="card">
+        <div class="sec-lbl">Modes</div>
+        <div id="tog-row">
+          <button class="tog" id="tog-auto">⚡ Auto-Start</button>
+          <button class="tog danger" id="tog-hc">💀 Hardcore</button>
+          <button class="tog danger" id="tog-boss">🐉 Boss Fight</button>
+          <button class="tog" id="tog-notif">🔔 Notifications</button>
+        </div>
+      </div>
+      <div class="card danger-card">
+        <div class="sec-lbl">Danger Zone</div>
+        <p
+          style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--mut);line-height:1.6;margin-bottom:14px">
+          Permanently erase all XP, sessions, streaks and achievements from this browser.
+        </p>
+        <button class="ctrl" id="btn-wipe" style="border-color:#ff6060;color:#ff6060;width:100%;letter-spacing:2px">
+          🗑 Reset All Progress
+        </button>
+      </div>
+    </div>
+
+    <!-- ══ TAB: TASKS ════════════════════════════════════ -->
+    <div id="tab-tasks" class="tab">
+      <div class="card">
+        <div class="sec-lbl">Task Manager</div>
+        <div id="task-input-row">
+          <input id="task-input" type="text" placeholder="Add a new task…" maxlength="80">
+          <select id="task-pomo-sel" title="Estimated pomodoros">
+            <option value="1">🍅×1</option>
+            <option value="2">🍅×2</option>
+            <option value="3">🍅×3</option>
+            <option value="4">🍅×4</option>
+            <option value="5">🍅×5</option>
+            <option value="8">🍅×8</option>
+          </select>
+          <button id="btn-add-task">＋ Add</button>
+        </div>
+        <div id="task-list"></div>
+        <div id="task-stats-row">
+          <div class="task-stat">
+            <div class="task-stat-v" id="ts-total">0</div>
+            <div class="task-stat-l">Total</div>
+          </div>
+          <div class="task-stat">
+            <div class="task-stat-v" id="ts-done">0</div>
+            <div class="task-stat-l">Done</div>
+          </div>
+          <div class="task-stat">
+            <div class="task-stat-v" id="ts-xp">0</div>
+            <div class="task-stat-l">XP Earned</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ TAB: QUESTS ═══════════════════════════════════ -->
+    <div id="tab-quests" class="tab">
+      <div class="card">
+        <div class="sec-lbl">Daily Quests</div>
+        <div id="quest-date"></div>
+        <div id="quest-list"></div>
+        <div id="quest-all-done">
+          ✦ All Quests Complete ✦
+          <div id="quest-bonus-xp"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ TAB: CALENDAR ════════════════════════════════ -->
+    <div id="tab-calendar" class="tab">
+      <div class="card">
+        <div class="sec-lbl">Productivity Calendar</div>
+
+        <!-- Month navigation -->
+        <div id="cal-nav-bar">
+          <button class="cal-arrow" id="cal-prev" aria-label="Previous month">‹</button>
+          <div id="cal-month-title"></div>
+          <button class="cal-arrow" id="cal-next" aria-label="Next month">›</button>
+        </div>
+
+        <!-- Streak summary banner -->
+        <div id="cal-streak-banner">
+          <span class="csb-fire">🔥</span>
+          <span class="csb-val" id="csb-streak">0</span>
+          <span style="font-size:10px">day streak</span>
+          <span class="csb-sep">|</span>
+          <span class="csb-val" id="csb-total">0</span>
+          <span style="font-size:10px">sessions this month</span>
+        </div>
+
+        <!-- Day-of-week labels -->
+        <div id="cal-dow-row">
+          <div class="cal-dow">Mon</div>
+          <div class="cal-dow">Tue</div>
+          <div class="cal-dow">Wed</div>
+          <div class="cal-dow">Thu</div>
+          <div class="cal-dow">Fri</div>
+          <div class="cal-dow">Sat</div>
+          <div class="cal-dow">Sun</div>
+        </div>
+
+        <!-- Calendar grid (built by JS) -->
+        <div id="cal-grid"></div>
+
+        <!-- Legend -->
+        <div id="cal-legend">
+          <span id="cal-legend-label">Sessions:</span>
+          <div class="cl-item">
+            <div class="cl-sw cl-0"></div>0
+          </div>
+          <div class="cl-item">
+            <div class="cl-sw cl-1"></div>1–2
+          </div>
+          <div class="cl-item">
+            <div class="cl-sw cl-2"></div>3–5
+          </div>
+          <div class="cl-item">
+            <div class="cl-sw cl-3"></div>6–9
+          </div>
+          <div class="cl-item">
+            <div class="cl-sw cl-4"></div>10+
+          </div>
+          <div class="cl-item" style="margin-left:4px">🔥 streak</div>
+        </div>
+
+        <!-- Day detail panel (shown on click) -->
+        <div id="cal-detail-panel">
+          <div id="cdp-empty">Click any day to see details</div>
+          <div id="cdp-date" style="display:none"></div>
+          <div id="cdp-stats" style="display:none"></div>
+          <div id="cdp-note" style="display:none"></div>
+        </div>
+
+        <!-- Note editor -->
+        <div id="cal-plan-wrap" style="display:none">
+          <textarea id="cal-plan-input" placeholder="Add a note for this day… (plans, reflections, goals)"></textarea>
+          <div id="cal-plan-btns">
+            <button id="cal-plan-save">💾 Save Note</button>
+            <button id="cal-plan-clear">Clear</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Focus Mode Overlay -->
+  <div id="focus-overlay">
+    <button id="focus-fs-btn">⛶ Fullscreen</button>
+    <div id="focus-ring-wrap">
+      <svg id="focus-svg" width="260" height="260" viewBox="0 0 260 260">
+        <defs>
+          <filter id="focus-glow" x="-40%" y="-40%" width="180%" height="180%">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="5" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
+        <circle id="focus-ring-track" cx="130" cy="130" r="112" fill="none" stroke-width="6" />
+        <circle id="focus-ring-prog" cx="130" cy="130" r="112" fill="none" stroke-width="6" stroke-dasharray="703.72"
+          stroke-dashoffset="0" transform="rotate(-90 130 130)" filter="url(#focus-glow)" />
+      </svg>
+      <div
+        style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+        <div id="focus-time">25:00</div>
+        <div id="focus-mode-lbl">FOCUS TIME</div>
+      </div>
+    </div>
+    <div id="focus-task-name"></div>
+    <div id="focus-controls">
+      <button id="focus-pause-btn"><span id="focus-pause-lb">⏸ Pause</span></button>
+      <button id="focus-exit-btn">✕ Exit Focus</button>
+    </div>
+    <div id="focus-streak-wrap"></div>
+  </div>
+
+  <!-- Achievement Popup -->
+  <div id="ach-popup">
+    <div id="ach-pop-ico">🏆</div>
+    <div id="ach-pop-title">Achievement Unlocked!</div>
+    <div id="ach-pop-name"></div>
+    <div id="ach-pop-desc"></div>
+    <div id="ach-pop-xp"></div>
+  </div>
+
+  <!-- Calendar tooltip (positioned by JS) -->
+  <div id="cal-tooltip">
+    <div id="cal-tooltip-date"></div>
+    <div class="cal-tip-row"><span class="cal-tip-ico">🍅</span><span id="cal-tip-sessions"></span></div>
+    <div class="cal-tip-row"><span class="cal-tip-ico">⏱</span><span id="cal-tip-mins"></span></div>
+    <div class="cal-tip-row"><span class="cal-tip-ico">✅</span><span id="cal-tip-tasks"></span></div>
+  </div>
+
+  <!-- Bottom Nav -->
+  <nav id="nav">
+    <div id="nav-in">
+      <button class="nav-btn on" data-tab="timer"><span class="nav-ico">⏱</span>Timer</button>
+      <button class="nav-btn" data-tab="tasks"><span class="nav-ico">✅</span>Tasks</button>
+      <button class="nav-btn" data-tab="quests"><span class="nav-ico">🎯</span>Quests</button>
+      <button class="nav-btn" data-tab="analytics"><span class="nav-ico">📊</span>Stats</button>
+      <button class="nav-btn" data-tab="ach"><span class="nav-ico">🏆</span>Awards</button>
+      <button class="nav-btn" data-tab="calendar"><span class="nav-ico">📅</span>Cal</button>
+      <button class="nav-btn" data-tab="music"><span class="nav-ico">🎵</span>Music</button>
+      <button class="nav-btn" data-tab="settings"><span class="nav-ico">⚙️</span>Settings</button>
+    </div>
+  </nav>
+
+  <!-- =====================================================
+     SOLSTICE FOCUS — JavaScript Engine
+     100% real data · localStorage persistence
+     Web Audio alarm · HTML5 playlist
+     ===================================================== -->
+  <script>
+    'use strict';
+
+    /* ═══════════════════════════════════════════════════════
+       CALENDAR SYSTEM v2 — Premium Heatmap Dashboard
+       ═══════════════════════════════════════════════════════ */
+
+    /* ── Storage ──────────────────────────────────────────── */
+    const LS_CAL = 'solstice_calendar_v1';
+    const LS_NOTES = 'solstice_notes_v1';
+
+    let calData = {};   // {"2026-03-05": {sessions,minutes,tasks}}
+    let calNotes = {};   // {"2026-03-05": "note text"}
+    let calYear = new Date().getFullYear();
+    let calMonth = new Date().getMonth();
+    let selectedCalDay = null;
+
+    function loadCalData() {
+      try {
+        const r = localStorage.getItem(LS_CAL);
+        if (r) calData = JSON.parse(r);
+      } catch (_) { calData = {}; }
+    }
+    function saveCalData() {
+      try { localStorage.setItem(LS_CAL, JSON.stringify(calData)); } catch (_) { }
+    }
+    function loadCalNotes() {
+      try {
+        const r = localStorage.getItem(LS_NOTES);
+        if (r) calNotes = JSON.parse(r);
+      } catch (_) { calNotes = {}; }
+    }
+    function saveCalNotes() {
+      try { localStorage.setItem(LS_NOTES, JSON.stringify(calNotes)); } catch (_) { }
+    }
+
+    /* ── Log a focus session to calendar data ─────────────── */
+    function calLogSession(dateKey, minutes) {
+      if (!calData[dateKey]) calData[dateKey] = { sessions: 0, minutes: 0, tasks: 0 };
+      calData[dateKey].sessions++;
+      calData[dateKey].minutes += (minutes || 0);
+      saveCalData();
+      // Keep G.history in sync (for analytics / streak)
+      const day = G.history[dateKey] || { s: 0, m: 0 };
+      G.history = { ...G.history, [dateKey]: { s: calData[dateKey].sessions, m: calData[dateKey].minutes } };
+    }
+
+    /* ── Log a task completion to calendar data ───────────── */
+    function calLogTask(dateKey) {
+      if (!calData[dateKey]) calData[dateKey] = { sessions: 0, minutes: 0, tasks: 0 };
+      calData[dateKey].tasks++;
+      saveCalData();
+    }
+
+    /* ── Streak calculation from calData ─────────────────── */
+    function calBuildStreakSet() {
+      const set = new Set();
+      const keys = Object.keys(calData).filter(k => (calData[k].sessions || 0) > 0).sort();
+      if (!keys.length) return set;
+      // Walk backward from today finding consecutive productive days
+      const todayTs = new Date(iso() + 'T12:00:00').getTime();
+      let d = new Date(iso() + 'T12:00:00');
+      for (let i = 0; i < 365; i++) {
+        const k = d.toISOString().slice(0, 10);
+        if (calData[k] && calData[k].sessions > 0) {
+          set.add(k);
+        } else if (i > 0) {
+          break; // streak broken
+        }
+        d.setDate(d.getDate() - 1);
+      }
+      return set;
+    }
+
+    function calCurrentStreak() {
+      const set = calBuildStreakSet();
+      return set.size;
+    }
+
+    /* ── Heat level 0–4 based on sessions ─────────────────── */
+    function heatLevel(sessions) {
+      if (!sessions || sessions === 0) return 0;
+      if (sessions <= 2) return 1;
+      if (sessions <= 5) return 2;
+      if (sessions <= 9) return 3;
+      return 4;
+    }
+
+    /* ── Tooltip ───────────────────────────────────────────── */
+    const calTip = document.getElementById('cal-tooltip');
+    let calTipTimer = null;
+
+    function showCalTooltip(el, dateKey, data) {
+      if (!calTip) return;
+      clearTimeout(calTipTimer);
+      const d = data || { sessions: 0, minutes: 0, tasks: 0 };
+      const dateObj = new Date(dateKey + 'T12:00:00');
+      const label = dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'long', day: 'numeric' });
+      document.getElementById('cal-tooltip-date').textContent = label;
+      document.getElementById('cal-tip-sessions').textContent = d.sessions + ' session' + (d.sessions !== 1 ? 's' : '');
+      document.getElementById('cal-tip-mins').textContent = d.minutes + ' min focused';
+      document.getElementById('cal-tip-tasks').textContent = d.tasks + ' task' + (d.tasks !== 1 ? 's' : '') + ' completed';
+      // Position near the element
+      const rect = el.getBoundingClientRect();
+      let left = rect.left + window.scrollX + rect.width / 2 - 74;
+      let top = rect.top + window.scrollY - 110;
+      if (top < 4) top = rect.bottom + window.scrollY + 8;
+      left = Math.max(8, Math.min(left, window.innerWidth - 170));
+      calTip.style.left = left + 'px';
+      calTip.style.top = top + 'px';
+      calTip.classList.add('visible');
+    }
+
+    function hideCalTooltip() {
+      calTipTimer = setTimeout(() => { if (calTip) calTip.classList.remove('visible'); }, 120);
+    }
+
+    /* ── Main render function ──────────────────────────────── */
+    function rCalendar(direction) {
+      const todayKey = iso();
+      const todayDate = new Date();
+      const firstDay = new Date(calYear, calMonth, 1);
+      const lastDay = new Date(calYear, calMonth + 1, 0);
+      const startDow = (firstDay.getDay() + 6) % 7; // Mon=0
+
+      // Month title
+      document.getElementById('cal-month-title').textContent =
+        firstDay.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+      // Streak banner
+      const streak = calCurrentStreak();
+      const monthTotal = Object.keys(calData)
+        .filter(k => k.startsWith(`${calYear}-${String(calMonth + 1).padStart(2, '0')}`))
+        .reduce((acc, k) => acc + (calData[k]?.sessions || 0), 0);
+      const csbS = document.getElementById('csb-streak');
+      const csbT = document.getElementById('csb-total');
+      if (csbS) csbS.textContent = streak;
+      if (csbT) csbT.textContent = monthTotal;
+
+      // Build streak set for visual chain
+      const streakSet = calBuildStreakSet();
+
+      // Grid with slide animation
+      const grid = document.getElementById('cal-grid');
+      if (direction) {
+        grid.classList.add('cal-grid-exit');
+        setTimeout(() => {
+          grid.classList.remove('cal-grid-exit');
+          _buildCalGrid(grid, firstDay, lastDay, startDow, todayKey, streakSet);
+        }, 180);
+      } else {
+        _buildCalGrid(grid, firstDay, lastDay, startDow, todayKey, streakSet);
+      }
+    }
+
+    function _buildCalGrid(grid, firstDay, lastDay, startDow, todayKey, streakSet) {
+      grid.innerHTML = '';
+
+      // Leading empty cells (previous month days)
+      const prevMonthLast = new Date(calYear, calMonth, 0);
+      for (let i = 0; i < startDow; i++) {
+        const dayNum = prevMonthLast.getDate() - startDow + 1 + i;
+        const el = document.createElement('div');
+        el.className = 'cal-day other-month';
+        el.innerHTML = `<div class="cal-day-num">${dayNum}</div>`;
+        grid.appendChild(el);
+      }
+
+      // Current month days
+      for (let day = 1; day <= lastDay.getDate(); day++) {
+        const dateKey = `${calYear}-${String(calMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const data = calData[dateKey] || { sessions: 0, minutes: 0, tasks: 0 };
+        const lvl = heatLevel(data.sessions);
+        const isToday = dateKey === todayKey;
+        const inStreak = streakSet.has(dateKey);
+
+        const el = document.createElement('div');
+        el.className = `cal-day lvl-${lvl}`;
+        if (isToday) el.classList.add('today');
+
+        // Streak chain classes
+        if (inStreak) {
+          el.classList.add('streak-day');
+          const prevKey = dateKeyOffset(dateKey, -1);
+          const nextKey = dateKeyOffset(dateKey, 1);
+          const prevIn = streakSet.has(prevKey);
+          const nextIn = streakSet.has(nextKey);
+          if (!prevIn && nextIn) el.classList.add('streak-start');
+          else if (prevIn && nextIn) el.classList.add('streak-mid');
+          else if (prevIn && !nextIn) el.classList.add('streak-end');
+        }
+
+        // Inner HTML
+        let inner = `<div class="cal-day-num">${day}</div>`;
+        if (data.sessions > 0) {
+          inner += `<div class="cal-day-count">${data.sessions}s</div>`;
+        }
+        if (calNotes[dateKey]) {
+          inner += `<div class="cal-note-pin">📝</div>`;
+        }
+        el.innerHTML = inner;
+
+        // Tooltip on hover
+        el.addEventListener('mouseenter', () => showCalTooltip(el, dateKey, data));
+        el.addEventListener('mouseleave', hideCalTooltip);
+        // Touch support
+        el.addEventListener('touchstart', () => showCalTooltip(el, dateKey, data), { passive: true });
+
+        // Click → detail panel
+        el.addEventListener('click', () => showCalDetail(dateKey, data));
+
+        grid.appendChild(el);
+      }
+
+      // Trailing empty cells (next month)
+      const total = startDow + lastDay.getDate();
+      const trailing = (7 - total % 7) % 7;
+      for (let i = 1; i <= trailing; i++) {
+        const el = document.createElement('div');
+        el.className = 'cal-day other-month';
+        el.innerHTML = `<div class="cal-day-num">${i}</div>`;
+        grid.appendChild(el);
+      }
+    }
+
+    function dateKeyOffset(key, offset) {
+      const d = new Date(key + 'T12:00:00');
+      d.setDate(d.getDate() + offset);
+      return d.toISOString().slice(0, 10);
+    }
+
+    /* ── Detail panel ─────────────────────────────────────── */
+    function showCalDetail(dateKey, data) {
+      selectedCalDay = dateKey;
+      // Always read fresh from calData (merge with passed data for safety)
+      const stored = calData[dateKey] || { sessions: 0, minutes: 0, tasks: 0 };
+      const d = {
+        sessions: Math.max((data && data.sessions) || 0, stored.sessions),
+        minutes: Math.max((data && data.minutes) || 0, stored.minutes),
+        tasks: Math.max((data && data.tasks) || 0, stored.tasks),
+      };
+      const panel = document.getElementById('cal-detail-panel');
+      const empty = document.getElementById('cdp-empty');
+      const dateEl = document.getElementById('cdp-date');
+      const statsEl = document.getElementById('cdp-stats');
+      const noteEl = document.getElementById('cdp-note');
+
+      if (!panel) return;
+
+      const dateObj = new Date(dateKey + 'T12:00:00');
+      const label = dateObj.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+      const note = calNotes[dateKey] || '';
+
+      // Hide empty, show content
+      if (empty) empty.style.display = 'none';
+      if (dateEl) { dateEl.style.display = 'block'; dateEl.textContent = label; }
+      if (statsEl) {
+        statsEl.style.display = 'flex';
+        statsEl.innerHTML =
+          `<div class="cdp-stat"><div class="cdp-stat-v">${d.sessions}</div><div class="cdp-stat-l">🍅 Sessions</div></div>` +
+          `<div class="cdp-stat"><div class="cdp-stat-v">${d.minutes}</div><div class="cdp-stat-l">⏱ Minutes</div></div>` +
+          `<div class="cdp-stat"><div class="cdp-stat-v">${d.tasks}</div><div class="cdp-stat-l">✅ Tasks</div></div>`;
+      }
+      if (noteEl) {
+        if (note) { noteEl.style.display = 'block'; noteEl.textContent = '📝 ' + note; }
+        else { noteEl.style.display = 'none'; }
+      }
+
+      // Show accent border if has data
+      panel.classList.toggle('has-data', d.sessions > 0 || !!note);
+
+      // Note editor
+      const wrap = document.getElementById('cal-plan-wrap');
+      const inp = document.getElementById('cal-plan-input');
+      if (wrap) wrap.style.display = 'block';
+      if (inp) inp.value = note;
+    }
+
+    /* ── Plan buttons ─────────────────────────────────────── */
+    function setupCalPlanButtons() {
+      const saveBtn = document.getElementById('cal-plan-save');
+      const clearBtn = document.getElementById('cal-plan-clear');
+
+      if (saveBtn) saveBtn.addEventListener('click', () => {
+        if (!selectedCalDay) return;
+        const val = (document.getElementById('cal-plan-input').value || '').trim();
+        if (val) calNotes[selectedCalDay] = val;
+        else delete calNotes[selectedCalDay];
+        saveCalNotes();
+        const data = calData[selectedCalDay] || { sessions: 0, minutes: 0, tasks: 0 };
+        showCalDetail(selectedCalDay, data);
+        rCalendar();
+        toast('📝', 'Note saved', 'var(--acc)');
+      });
+
+      if (clearBtn) clearBtn.addEventListener('click', () => {
+        const inp = document.getElementById('cal-plan-input');
+        if (inp) inp.value = '';
+      });
+    }
+
+    /* ── Month navigation ─────────────────────────────────── */
+    document.getElementById('cal-prev').addEventListener('click', () => {
+      const dir = -1;
+      calMonth--;
+      if (calMonth < 0) { calMonth = 11; calYear--; }
+      rCalendar(dir);
+    });
+    document.getElementById('cal-next').addEventListener('click', () => {
+      const dir = 1;
+      calMonth++;
+      if (calMonth > 11) { calMonth = 0; calYear++; }
+      rCalendar(dir);
+    });
+
+
+    /* ── CONSTANTS ──────────────────────────────────────── */
+    const LS = 'solstice_v1';
+    const CIRC = 2 * Math.PI * 96; // SVG ring r=96
+    const BMAX = 500;
+    const BDMG = 100;
+
+    const RANKS = [
+      { n: 'Novice', min: 0, c: '#888' },
+      { n: 'Focused', min: 100, c: '#4a9eff' },
+      { n: 'Grinder', min: 300, c: '#9b6fd4' },
+      { n: 'Flow State', min: 700, c: '#f5b042' },
+      { n: 'Deep Worker', min: 1500, c: '#ef5050' },
+      { n: 'Focus Master', min: 3000, c: '#30c878' },
+      { n: 'Productivity God', min: 6000, c: '#ff8c30' },
+    ];
+
+    const ACHS = [
+      { id: 'first', n: 'First Light', d: 'Complete your 1st session', ico: '🌅', xp: 50, ok: s => s.p >= 1 },
+      { id: 'p10', n: 'Decade', d: 'Complete 10 sessions total', ico: '💪', xp: 100, ok: s => s.p >= 10 },
+      { id: 'p50', n: 'Centurion', d: 'Complete 50 sessions total', ico: '🏛️', xp: 500, ok: s => s.p >= 50 },
+      { id: 's3', n: 'Threepeat', d: 'Maintain a 3-day streak', ico: '🔥', xp: 75, ok: s => s.str >= 3 },
+      { id: 's7', n: 'Week Warrior', d: 'Maintain a 7-day streak', ico: '⚔️', xp: 200, ok: s => s.str >= 7 },
+      { id: 'boss', n: 'Demon Slayer', d: 'Defeat the Procrastination Demon', ico: '🐉', xp: 150, ok: s => s.bd },
+      { id: 'deep', n: 'In The Zone', d: 'Log 120+ focus minutes in a day', ico: '🧠', xp: 100, ok: s => s.tm >= 120 },
+      { id: 'hc', n: 'No Mercy', d: 'Complete a Hardcore session', ico: '💀', xp: 200, ok: s => s.hh },
+    ];
+
+    const DEF = {
+      xp: 0, totalPomos: 0, streak: 0, lastDay: null,
+      unlocked: [], bossHp: BMAX, bossDefeated: false, history: {},
+      focusDur: 25, shortDur: 5, longDur: 15,
+      autoStart: false, hardcore: false, bossMode: false, notifOn: false,
+      timerMode: 'focus', timeLeft: 1500, wasRunning: false,
+      season: 'autumn', alarmVol: 0.8, musicVol: 0.7,
+    };
+
+    /* ── STATE ───────────────────────────────────────────── */
+    let G = {};
+    let running = false, ticker = null, toastTm = null;
+    let currentSeason = 'autumn';
+
+    /* ── AUDIO ───────────────────────────────────────────── */
+    let actx = null;
+    let playlist = [];      // {name, url}
+    let plIdx = 0;
+    let musicEl = null;
+    let musicOn = false;
+
+    function getACtx() {
+      if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+      return actx;
+    }
+
+    /* Synthesised multi-tone alarm — works offline, no file needed */
+    function playAlarm(vol, onDone) {
+      try {
+        const ctx = getACtx();
+        if (ctx.state === 'suspended') ctx.resume();
+        const tones = [
+          { f: 523.25, t: 0 },    // C5
+          { f: 659.25, t: 0.22 }, // E5
+          { f: 783.99, t: 0.44 }, // G5
+          { f: 1046.5, t: 0.66 }, // C6
+        ];
+        let done = false;
+        function pass(offset, gain_scale, cb) {
+          tones.forEach(({ f, t }) => {
+            const osc = ctx.createOscillator();
+            const amp = ctx.createGain();
+            const at = ctx.currentTime + offset + t;
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(f, at);
+            amp.gain.setValueAtTime(0, at);
+            amp.gain.linearRampToValueAtTime(vol * gain_scale, at + 0.04);
+            amp.gain.exponentialRampToValueAtTime(0.0001, at + 0.55);
+            osc.connect(amp); amp.connect(ctx.destination);
+            osc.start(at); osc.stop(at + 0.6);
+          });
+        }
+        pass(0, 0.65, null);
+        pass(1.1, 0.5, null);
+        pass(2.0, 0.4, null);
+        const dur = 2.0 + tones[tones.length - 1].t + 0.65;
+        setTimeout(() => { if (onDone) onDone(); }, dur * 1000 + 300);
+      } catch (e) {
+        setTimeout(() => { if (onDone) onDone(); }, 2800);
+      }
+    }
+
+    function ensureMusic() {
+      if (!musicEl) {
+        musicEl = new Audio();
+        musicEl.volume = (G && G.musicVol != null) ? G.musicVol : 0.7;
+        musicEl.addEventListener('ended', () => {
+          if (playlist.length) { plIdx = (plIdx + 1) % playlist.length; doPlay(plIdx); }
+        });
+        musicEl.addEventListener('timeupdate', updateSeek);
+        musicEl.addEventListener('error', () => { console.warn('Audio error for track', plIdx); });
+      }
+      return musicEl;
+    }
+
+    function doPlay(idx) {
+      if (!playlist.length) return;
+      const el = ensureMusic();
+      el.src = playlist[idx].url;
+      el.load();
+      el.play().then(() => {
+        musicOn = true; plIdx = idx;
+        refreshPlUI(); updateNPChip();
+      }).catch(() => { });
+    }
+
+    function pauseMusic() {
+      if (musicEl && musicOn) { musicEl.pause(); musicOn = false; refreshPlUI(); updateNPChip(); }
+    }
+    function resumeMusic() {
+      if (musicEl && musicEl.src && playlist.length) {
+        musicEl.play().then(() => { musicOn = true; refreshPlUI(); updateNPChip(); }).catch(() => { });
+      }
+    }
+
+    function fireAlarmSequence() {
+      const wasOn = musicOn;
+      if (wasOn) pauseMusic();
+      const vol = parseFloat(document.getElementById('alarm-vol').value || '0.8');
+      document.getElementById('ring-wrap').classList.add('alarming');
+      playAlarm(vol, () => {
+        document.getElementById('ring-wrap').classList.remove('alarming');
+        if (wasOn) resumeMusic();
+      });
+    }
+
+    function updateSeek() {
+      const el = document.getElementById('pl-seek');
+      if (!musicEl || !musicEl.duration) return;
+      el.value = (musicEl.currentTime / musicEl.duration) * 100;
+    }
+
+    function updateNPChip() {
+      const chip = document.getElementById('np-chip');
+      const nm = document.getElementById('np-nm');
+      if (musicOn && playlist.length) {
+        nm.textContent = playlist[plIdx]?.name || '—';
+        chip.classList.add('show');
+      } else {
+        chip.classList.remove('show');
+      }
+    }
+
+    function refreshPlUI() {
+      document.getElementById('pl-play').textContent = musicOn ? '⏸' : '▶';
+      document.getElementById('pl-now').textContent = playlist.length ? (playlist[plIdx]?.name || '—') : 'Nothing playing';
+      document.querySelectorAll('.pl-item').forEach((el, i) =>
+        el.classList.toggle('active', i === plIdx && musicOn));
+    }
+
+    /* ── STORAGE ─────────────────────────────────────────── */
+    function save() { try { localStorage.setItem(LS, JSON.stringify({ ...G, wasRunning: running })); } catch (_) { } }
+    function load() { try { const r = localStorage.getItem(LS); return r ? { ...DEF, ...JSON.parse(r) } : null; } catch (_) { return null; } }
+
+    /* ── HELPERS ─────────────────────────────────────────── */
+    const iso = () => new Date().toISOString().slice(0, 10);
+    const fmtT = s => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+    const gRank = xp => [...RANKS].reverse().find(r => xp >= r.min) || RANKS[0];
+    const nRank = xp => RANKS.find(r => xp < r.min) || null;
+    const durOf = (m, S) => m === 'focus' ? S.focusDur * 60 : m === 'short' ? S.shortDur * 60 : S.longDur * 60;
+    const strCalc = (p, pd, td) => {
+      if (!pd) return 1;
+      const d = Math.round((new Date(td) - new Date(pd)) / 86400000);
+      return d === 0 ? p : d === 1 ? p + 1 : 1;
+    };
+
+    function fireNotif(title, body) {
+      if (!G.notifOn || typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
+      try { new Notification(title, { body }); } catch (_) { }
+    }
+
+    /* ── TOAST ───────────────────────────────────────────── */
+    function toast(ico, msg, color) {
+      const el = document.getElementById('toast');
+      document.getElementById('ti').textContent = ico;
+      document.getElementById('tm').textContent = msg;
+      el.style.borderColor = color || 'var(--acc)';
+      el.style.color = color || 'var(--acc)';
+      el.classList.add('show');
+      clearTimeout(toastTm);
+      toastTm = setTimeout(() => el.classList.remove('show'), 3400);
+    }
+
+    /* ── PARTICLES ───────────────────────────────────────── */
+    const cnv = document.getElementById('fx-canvas');
+    const cx = cnv.getContext('2d');
+    let parts = [];
+    let raf = null;
+
+    function resizeCnv() { cnv.width = innerWidth; cnv.height = innerHeight; }
+
+    /* Wind gust state for autumn */
+    let windGust = 0, windTimer = 0;
+
+    function newPart(season) {
+      const base = {
+        x: Math.random() * cnv.width, y: -20,
+        life: 0, maxLife: 180 + Math.random() * 320,
+        vy: 0.5 + Math.random() * 1.6,
+        vx: (Math.random() - .5) * 0.7,
+        sz: 3 + Math.random() * 7,
+        rot: Math.random() * Math.PI * 2,
+        rotV: (Math.random() - .5) * 0.045,
+        sw: Math.random() * Math.PI * 2,
+        swS: 0.012 + Math.random() * 0.025,
+        swA: 18 + Math.random() * 50,
+        season,
+        depth: 0.4 + Math.random() * 0.6, // parallax depth layer
+      };
+      if (season === 'spring') {
+        // Petals with wind-influenced swirl
+        const hue = 300 + Math.random() * 50;
+        base.col = `hsl(${hue},${60 + Math.random() * 25}%,${70 + Math.random() * 15}%)`;
+        base.sz = 4 + Math.random() * 8;
+        base.shape = 'petal';
+        base.maxLife = 250 + Math.random() * 350;
+        base.swA = 25 + Math.random() * 60;
+        base.vy = 0.3 + Math.random() * 1.2;
+      } else if (season === 'summer') {
+        // Pollen dots — tiny, golden, floating upward gently
+        const isCloud = Math.random() < 0.15;
+        if (isCloud) {
+          base.shape = 'cloud';
+          base.col = 'rgba(255,255,255,0.12)';
+          base.sz = 30 + Math.random() * 50;
+          base.vy = -(0.05 + Math.random() * 0.1);
+          base.vx = (Math.random() - .5) * 0.3;
+          base.y = Math.random() * cnv.height * 0.5;
+          base.life = Math.random() * 200;
+          base.maxLife = 500 + Math.random() * 400;
+          base.swA = 0;
+        } else {
+          base.col = `hsl(${45 + Math.random() * 25},${90 + Math.random() * 10}%,${65 + Math.random() * 20}%)`;
+          base.sz = 1.5 + Math.random() * 3;
+          base.shape = 'pollen';
+          base.y = 20 + Math.random() * cnv.height;
+          base.vy = -(0.15 + Math.random() * 0.6);
+          base.vx = (Math.random() - .5) * 0.4;
+          base.life = Math.random() * 60;
+          base.maxLife = 120 + Math.random() * 180;
+          base.swA = 5 + Math.random() * 15;
+        }
+      } else if (season === 'autumn') {
+        // Leaves with depth layers (near/far) for parallax
+        const isFar = base.depth < 0.55;
+        base.col = `hsl(${12 + Math.random() * 30},${72 + Math.random() * 20}%,${38 + Math.random() * 28}%)`;
+        base.sz = isFar ? (3 + Math.random() * 6) : (7 + Math.random() * 12);
+        base.shape = 'leaf';
+        base.vy = (isFar ? 0.4 : 0.9) + Math.random() * (isFar ? 1.2 : 2.2);
+        base.swA = 30 + Math.random() * 80;
+        base.maxLife = 200 + Math.random() * 400;
+      } else {
+        // Snowflakes with depth parallax (3 depth layers)
+        const layer = Math.floor(base.depth * 3); // 0=far,1=mid,2=near
+        const sizes = [1, 2, 4];
+        const speeds = [0.15, 0.4, 0.8];
+        base.sz = sizes[layer] + Math.random() * sizes[layer];
+        base.vy = speeds[layer] + Math.random() * speeds[layer];
+        const alpha = [0.35, 0.55, 0.8][layer];
+        base.col = `rgba(200,230,250,${alpha + Math.random() * .2})`;
+        base.shape = 'snow';
+        base.swA = 4 + Math.random() * 16;
+        base.maxLife = 300 + Math.random() * 400;
+      }
+      return base;
+    }
+
+    function drawPart(p) {
+      const fade = Math.min(1, p.life / 28) * Math.min(1, (p.maxLife - p.life) / 28);
+      if (fade <= 0) return;
+      cx.save();
+      cx.globalAlpha = fade * 0.88;
+      cx.translate(p.x, p.y);
+
+      if (p.shape === 'petal') {
+        cx.rotate(p.rot);
+        cx.fillStyle = p.col;
+        cx.beginPath(); cx.ellipse(0, 0, p.sz, p.sz * 0.52, 0, 0, Math.PI * 2); cx.fill();
+        // Shine centre
+        cx.globalAlpha = fade * 0.3;
+        cx.fillStyle = 'rgba(255,245,252,0.8)';
+        cx.beginPath(); cx.ellipse(0, 0, p.sz * .38, p.sz * .22, 0, 0, Math.PI * 2); cx.fill();
+        // Tip highlight
+        cx.globalAlpha = fade * 0.15;
+        cx.fillStyle = 'rgba(255,255,255,0.9)';
+        cx.beginPath(); cx.arc(0, -p.sz * .7, p.sz * .14, 0, Math.PI * 2); cx.fill();
+
+      } else if (p.shape === 'pollen') {
+        // Soft glow dot for summer
+        const g = cx.createRadialGradient(0, 0, 0, 0, 0, p.sz * 2);
+        g.addColorStop(0, p.col);
+        g.addColorStop(0.5, p.col.replace(')', ',0.4)').replace('hsl', 'hsla'));
+        g.addColorStop(1, 'transparent');
+        cx.fillStyle = g;
+        cx.beginPath(); cx.arc(0, 0, p.sz * 2, 0, Math.PI * 2); cx.fill();
+
+      } else if (p.shape === 'cloud') {
+        // Soft drifting cloud shadow
+        cx.globalAlpha = fade * 0.18;
+        const g = cx.createRadialGradient(0, 0, 0, 0, 0, p.sz);
+        g.addColorStop(0, 'rgba(255,255,255,0.25)');
+        g.addColorStop(1, 'transparent');
+        cx.fillStyle = g;
+        cx.save();
+        cx.scale(2.5, 1);
+        cx.beginPath(); cx.arc(0, 0, p.sz, 0, Math.PI * 2); cx.fill();
+        cx.restore();
+
+      } else if (p.shape === 'leaf') {
+        cx.rotate(p.rot);
+        cx.fillStyle = p.col;
+        cx.beginPath();
+        cx.moveTo(0, -p.sz);
+        cx.bezierCurveTo(p.sz * .65, -p.sz * .5, p.sz * .85, p.sz * .2, 0, p.sz);
+        cx.bezierCurveTo(-p.sz * .85, p.sz * .2, -p.sz * .65, -p.sz * .5, 0, -p.sz);
+        cx.fill();
+        // Sheen
+        cx.globalAlpha = fade * 0.22;
+        cx.fillStyle = 'rgba(255,220,100,.5)';
+        cx.beginPath();
+        cx.moveTo(0, -p.sz * .9);
+        cx.bezierCurveTo(p.sz * .25, -p.sz * .5, p.sz * .3, 0, 0, p.sz * .3);
+        cx.bezierCurveTo(-p.sz * .3, 0, -p.sz * .25, -p.sz * .5, 0, -p.sz * .9);
+        cx.fill();
+        // Vein
+        cx.globalAlpha = fade * 0.25;
+        cx.strokeStyle = 'rgba(255,210,80,.7)'; cx.lineWidth = 0.7; cx.lineCap = 'round';
+        cx.beginPath(); cx.moveTo(0, -p.sz * .88); cx.lineTo(0, p.sz * .88); cx.stroke();
+        cx.lineWidth = 0.5;
+        [-1, 1].forEach(s => {
+          cx.beginPath(); cx.moveTo(0, -p.sz * .1); cx.lineTo(s * p.sz * .55, -p.sz * .45); cx.stroke();
+          cx.beginPath(); cx.moveTo(0, p.sz * .2); cx.lineTo(s * p.sz * .5, p.sz * .05); cx.stroke();
+        });
+
+      } else { // snow
+        cx.strokeStyle = p.col; cx.lineWidth = Math.max(0.5, p.sz * .2); cx.lineCap = 'round';
+        if (p.sz < 2) {
+          // tiny: just a dot
+          cx.fillStyle = p.col;
+          cx.beginPath(); cx.arc(0, 0, p.sz, 0, Math.PI * 2); cx.fill();
+        } else {
+          for (let i = 0; i < 6; i++) {
+            cx.save(); cx.rotate(i * Math.PI / 3 + p.rot);
+            cx.beginPath(); cx.moveTo(0, 0); cx.lineTo(0, -p.sz); cx.stroke();
+            // barbs
+            cx.beginPath(); cx.moveTo(0, -p.sz * .55); cx.lineTo(p.sz * .26, -p.sz * .3); cx.stroke();
+            cx.beginPath(); cx.moveTo(0, -p.sz * .55); cx.lineTo(-p.sz * .26, -p.sz * .3); cx.stroke();
+            if (p.sz > 2.5) {
+              cx.beginPath(); cx.moveTo(0, -p.sz * .25); cx.lineTo(p.sz * .14, -p.sz * .14); cx.stroke();
+              cx.beginPath(); cx.moveTo(0, -p.sz * .25); cx.lineTo(-p.sz * .14, -p.sz * .14); cx.stroke();
+            }
+            cx.restore();
+          }
+        }
+      }
+      cx.restore();
+    }
+
+    function tickFX() {
+      cx.clearRect(0, 0, cnv.width, cnv.height);
+
+      // Autumn wind gust logic
+      if (currentSeason === 'autumn') {
+        windTimer++;
+        if (windTimer > 200 && Math.random() < 0.005) { windGust = 1; windTimer = 0; }
+        if (windGust > 0) { windGust = Math.max(0, windGust - 0.008); }
+      } else { windGust = 0; windTimer = 0; }
+
+      const maxP = currentSeason === 'summer' ? 50 : currentSeason === 'winter' ? 70 : currentSeason === 'spring' ? 42 : 40;
+      const spawnRate = currentSeason === 'summer' ? 0.45 : currentSeason === 'winter' ? 0.4 : 0.32;
+      if (parts.length < maxP && Math.random() < spawnRate) parts.push(newPart(currentSeason));
+
+      parts = parts.filter(p => {
+        p.life++;
+        p.sw += p.swS;
+        p.rot += p.rotV;
+        // Wind gust pushes autumn leaves horizontally
+        const gustX = (currentSeason === 'autumn') ? windGust * 3.5 * p.depth : 0;
+        p.x += p.vx + Math.sin(p.sw) * (p.swA / 120) + gustX;
+        p.y += p.vy;
+        drawPart(p);
+        return p.life < p.maxLife && p.y < cnv.height + 60 && p.y > -80 && p.x > -200 && p.x < cnv.width + 200;
+      });
+      raf = requestAnimationFrame(tickFX);
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       THEME ANIMATION ENGINE — per-season canvas effects
+       Spring:  rotating sunbeam rays + pulsing light corona
+       Summer:  heat shimmer waves + sun glare bloom
+       Autumn:  drifting fog wisps + ember glow pockets
+       Winter:  flowing aurora ribbons + ice sparkle flashes
+       ═══════════════════════════════════════════════════════ */
+    const ac = document.getElementById('anim-canvas');
+    const actx2 = ac ? ac.getContext('2d') : null;
+    let animT = 0;  // global animation time counter
+
+    // ── Utility ──────────────────────────────────────────────
+    function resizeAnimCnv() {
+      if (!ac) return;
+      ac.width = innerWidth;
+      ac.height = innerHeight;
+    }
+    window.addEventListener('resize', resizeAnimCnv);
+    resizeAnimCnv();
+
+    // ── Spring: Sunbeams & corona ─────────────────────────────
+    function drawSpring(t, W, H) {
+      const ctx = actx2;
+      // Rotating soft sunbeams emanating from top-centre
+      const cx0 = W * 0.5, cy0 = -H * 0.05;
+      const numRays = 12;
+      const baseAngle = t * 0.0004;
+      for (let i = 0; i < numRays; i++) {
+        const angle = baseAngle + (i / numRays) * Math.PI * 2;
+        const spread = 0.018 + 0.012 * Math.sin(t * 0.0015 + i * 1.3);
+        const len = H * 1.6;
+        const alpha = (0.025 + 0.018 * Math.sin(t * 0.002 + i * 0.8)) * (i % 3 === 0 ? 1.6 : 1);
+        const grd = ctx.createLinearGradient(cx0, cy0, cx0 + Math.sin(angle) * len, cy0 + Math.cos(angle) * len);
+        grd.addColorStop(0, `rgba(255,210,230,${alpha * 2.2})`);
+        grd.addColorStop(0.4, `rgba(255,180,210,${alpha})`);
+        grd.addColorStop(1, 'rgba(255,180,210,0)');
+        ctx.beginPath();
+        ctx.moveTo(cx0, cy0);
+        ctx.lineTo(cx0 + Math.sin(angle - spread) * len, cy0 + Math.cos(angle - spread) * len);
+        ctx.lineTo(cx0 + Math.sin(angle + spread) * len, cy0 + Math.cos(angle + spread) * len);
+        ctx.closePath();
+        ctx.fillStyle = grd;
+        ctx.fill();
+      }
+      // Soft pulsing corona at source
+      const pulse = 0.5 + 0.5 * Math.sin(t * 0.003);
+      const corona = ctx.createRadialGradient(cx0, cy0, 0, cx0, cy0, H * 0.28 + pulse * 40);
+      corona.addColorStop(0, `rgba(255,220,235,${0.18 + pulse * 0.08})`);
+      corona.addColorStop(0.5, `rgba(255,180,210,${0.06 + pulse * 0.03})`);
+      corona.addColorStop(1, 'rgba(255,180,210,0)');
+      ctx.beginPath(); ctx.arc(cx0, cy0, H * 0.28 + pulse * 40, 0, Math.PI * 2); ctx.fillStyle = corona; ctx.fill();
+      // Pastel gradient drift across screen
+      const drift = Math.sin(t * 0.0006) * W * 0.15;
+      const pgrd = ctx.createLinearGradient(drift, 0, W + drift, H);
+      pgrd.addColorStop(0, 'rgba(252,200,220,0.04)');
+      pgrd.addColorStop(0.4, 'rgba(230,180,250,0.06)');
+      pgrd.addColorStop(0.7, 'rgba(255,210,230,0.04)');
+      pgrd.addColorStop(1, 'rgba(220,190,255,0.03)');
+      ctx.fillStyle = pgrd; ctx.fillRect(0, 0, W, H);
+    }
+
+    // ── Summer: Heat waves & sun bloom ───────────────────────
+    function drawSummer(t, W, H) {
+      const ctx = actx2;
+      // Animated sky gradient that slowly shifts warm→cool
+      const skyShift = Math.sin(t * 0.0004) * 0.12;
+      const sky = ctx.createLinearGradient(0, 0, 0, H * 0.55);
+      sky.addColorStop(0, `rgba(74,171,221,${0.08 + skyShift * 0.5})`);
+      sky.addColorStop(0.5, `rgba(255,230,120,${0.06})`);
+      sky.addColorStop(1, 'rgba(255,230,120,0)');
+      ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
+      // Sun glare bloom at top-right
+      const sx = W * 0.82, sy = H * -0.04;
+      const glare = ctx.createRadialGradient(sx, sy, 0, sx, sy, H * 0.45);
+      const gPulse = 0.5 + 0.5 * Math.sin(t * 0.002);
+      glare.addColorStop(0, `rgba(255,240,160,${0.22 + gPulse * 0.10})`);
+      glare.addColorStop(0.3, `rgba(255,200,60,${0.10 + gPulse * 0.04})`);
+      glare.addColorStop(0.7, `rgba(255,160,0,${0.04})`);
+      glare.addColorStop(1, 'rgba(255,120,0,0)');
+      ctx.fillStyle = glare; ctx.fillRect(0, 0, W, H);
+      // Heat shimmer waves — horizontal sine bands rising
+      const numBands = 5;
+      for (let b = 0; b < numBands; b++) {
+        const yBase = H * (0.35 + b * 0.13);
+        const speed = 0.0005 + b * 0.0002;
+        const amp = 4 + b * 2;
+        const alpha = (0.025 - b * 0.003) * (0.6 + 0.4 * Math.sin(t * 0.0008 + b));
+        ctx.beginPath();
+        for (let x = 0; x <= W; x += 6) {
+          const y = yBase + Math.sin(x * 0.012 + t * speed) * amp + Math.sin(x * 0.008 - t * speed * 0.7) * amp * 0.5;
+          x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        }
+        ctx.strokeStyle = `rgba(255,200,80,${alpha})`;
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+      }
+    }
+
+    // ── Autumn: Fog wisps & ember pockets ────────────────────
+    function drawAutumn(t, W, H) {
+      const ctx = actx2;
+      // Rolling ground fog — soft ellipses drifting at bottom
+      const numFog = 6;
+      for (let i = 0; i < numFog; i++) {
+        const drift = ((t * (0.015 + i * 0.004) + i * W / numFog) % (W * 1.4)) - W * 0.2;
+        const yBase = H * (0.75 + i * 0.04);
+        const fogW = W * (0.28 + i * 0.06);
+        const fogH = H * (0.04 + i * 0.012);
+        const alpha = 0.04 + 0.02 * Math.sin(t * 0.0008 + i * 2);
+        const fog = ctx.createRadialGradient(drift, yBase, 0, drift, yBase, fogW);
+        fog.addColorStop(0, `rgba(200,120,50,${alpha * 2})`);
+        fog.addColorStop(0.5, `rgba(180,90,30,${alpha})`);
+        fog.addColorStop(1, 'rgba(160,70,20,0)');
+        ctx.save();
+        ctx.scale(1, fogH / fogW);
+        ctx.beginPath(); ctx.arc(drift, yBase * (fogW / fogH), fogW, 0, Math.PI * 2);
+        ctx.fillStyle = fog; ctx.fill();
+        ctx.restore();
+      }
+      // Warm ambient glow pulse from bottom
+      const gPulse = 0.5 + 0.5 * Math.sin(t * 0.0018);
+      const ambientGrd = ctx.createRadialGradient(W * 0.5, H * 1.1, 0, W * 0.5, H * 1.1, H * 0.7);
+      ambientGrd.addColorStop(0, `rgba(220,80,20,${0.06 + gPulse * 0.04})`);
+      ambientGrd.addColorStop(0.5, `rgba(180,60,10,${0.025})`);
+      ambientGrd.addColorStop(1, 'rgba(150,40,5,0)');
+      ctx.fillStyle = ambientGrd; ctx.fillRect(0, 0, W, H);
+      // Ember glow pockets — small bright circles drifting up
+      const numEmbers = 8;
+      for (let e = 0; e < numEmbers; e++) {
+        const seed = e * 137.508;
+        const ex = (W * 0.1 + W * 0.8 * ((seed * 0.618) % 1));
+        const eyOff = ((t * (0.02 + (seed % 0.015)) + seed * 50) % (H * 0.7));
+        const ey = H - eyOff;
+        const er = 3 + 4 * ((seed * 0.382) % 1);
+        const ea = (0.04 + 0.04 * Math.sin(t * 0.003 + e)) * Math.min(1, eyOff / 60) * Math.max(0, 1 - eyOff / (H * 0.65));
+        const eg = ctx.createRadialGradient(ex, ey, 0, ex, ey, er * 3);
+        eg.addColorStop(0, `rgba(255,160,40,${ea * 3})`);
+        eg.addColorStop(0.4, `rgba(255,80,10,${ea})`);
+        eg.addColorStop(1, 'rgba(200,40,0,0)');
+        ctx.beginPath(); ctx.arc(ex, ey, er * 3, 0, Math.PI * 2);
+        ctx.fillStyle = eg; ctx.fill();
+      }
+    }
+
+    // ── Winter: Aurora ribbons & ice sparkles ────────────────
+    function drawWinter(t, W, H) {
+      const ctx = actx2;
+      // Aurora ribbons — layered sine waves across upper portion
+      const numRibbons = 4;
+      const auroraColors = [
+        [50, 220, 160],   // teal-green
+        [80, 140, 240],   // blue
+        [140, 60, 200],   // violet
+        [60, 200, 220],   // cyan
+      ];
+      for (let r = 0; r < numRibbons; r++) {
+        const [cr, cg, cb] = auroraColors[r];
+        const yBase = H * (0.08 + r * 0.07);
+        const speed1 = 0.0004 + r * 0.0001;
+        const speed2 = 0.0003 - r * 0.00005;
+        const amp1 = H * 0.04 + r * H * 0.008;
+        const amp2 = H * 0.02;
+        const thick = 18 + r * 8;
+        const alpha = (0.055 - r * 0.008) * (0.5 + 0.5 * Math.sin(t * 0.0012 + r * 1.4));
+        ctx.beginPath();
+        for (let x = 0; x <= W + 20; x += 8) {
+          const y = yBase
+            + Math.sin(x * 0.007 + t * speed1) * amp1
+            + Math.sin(x * 0.013 - t * speed2) * amp2
+            + Math.sin(x * 0.004 + t * speed1 * 1.5 + r) * amp1 * 0.4;
+          x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        }
+        ctx.strokeStyle = `rgba(${cr},${cg},${cb},${alpha * 2.5})`;
+        ctx.lineWidth = thick;
+        ctx.lineCap = 'round';
+        ctx.shadowColor = `rgba(${cr},${cg},${cb},0.4)`;
+        ctx.shadowBlur = 18;
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+        // Thinner bright core
+        ctx.beginPath();
+        for (let x = 0; x <= W + 20; x += 8) {
+          const y = yBase
+            + Math.sin(x * 0.007 + t * speed1) * amp1
+            + Math.sin(x * 0.013 - t * speed2) * amp2
+            + Math.sin(x * 0.004 + t * speed1 * 1.5 + r) * amp1 * 0.4;
+          x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        }
+        ctx.strokeStyle = `rgba(${cr + 80},${cg + 60},${cb + 50},${alpha * 1.2})`;
+        ctx.lineWidth = thick * 0.25;
+        ctx.stroke();
+      }
+      // Falling ice sparkle flashes
+      if (!drawWinter._sparks) {
+        drawWinter._sparks = Array.from({ length: 18 }, (_, i) => ({
+          x: Math.random() * W, y: Math.random() * H,
+          life: Math.random() * 120, maxLife: 80 + Math.random() * 100,
+          sz: 1 + Math.random() * 2.5, vy: 0.1 + Math.random() * 0.3
+        }));
+      }
+      drawWinter._sparks.forEach(sp => {
+        sp.life++;
+        sp.y += sp.vy;
+        if (sp.life > sp.maxLife || sp.y > H) { sp.x = Math.random() * W; sp.y = -5; sp.life = 0; sp.maxLife = 80 + Math.random() * 100; }
+        const a = Math.min(1, sp.life / 20) * Math.min(1, (sp.maxLife - sp.life) / 20);
+        ctx.save();
+        ctx.globalAlpha = a * 0.7;
+        ctx.strokeStyle = 'rgba(210,240,255,0.9)';
+        ctx.lineWidth = 0.8;
+        ctx.translate(sp.x, sp.y);
+        for (let arm = 0; arm < 4; arm++) {
+          ctx.save(); ctx.rotate(arm * Math.PI / 4);
+          ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, -sp.sz * 2); ctx.stroke();
+          ctx.restore();
+        }
+        ctx.restore();
+      });
+      // Deep space ambient glow — polar light tinge over whole bg
+      const bg = ctx.createLinearGradient(0, 0, 0, H * 0.6);
+      bg.addColorStop(0, `rgba(50,120,200,${0.035 + 0.015 * Math.sin(t * 0.0008)})`);
+      bg.addColorStop(0.5, `rgba(30,80,160,0.015)`);
+      bg.addColorStop(1, 'rgba(20,60,140,0)');
+      ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+    }
+
+    // ── Main animation loop ───────────────────────────────────
+    function tickAnim() {
+      if (!actx2) { requestAnimationFrame(tickAnim); return; }
+      const W = ac.width, H = ac.height;
+      actx2.clearRect(0, 0, W, H);
+      animT++;
+      if (currentSeason === 'spring') drawSpring(animT, W, H);
+      else if (currentSeason === 'summer') drawSummer(animT, W, H);
+      else if (currentSeason === 'autumn') drawAutumn(animT, W, H);
+      else drawWinter(animT, W, H);
+      requestAnimationFrame(tickAnim);
+    }
+    tickAnim();
+
+    function setSeason(s) {
+      currentSeason = s;
+      document.body.className = s;
+      document.querySelectorAll('.s-btn').forEach(b => b.classList.toggle('active', b.dataset.s === s));
+      parts = [];
+      G.season = s; save();
+    }
+
+    /* ── RENDER ──────────────────────────────────────────── */
+    function rRing() {
+      const dur = durOf(G.timerMode, G);
+      const off = CIRC * (G.timeLeft / dur);
+      document.getElementById('ring-fill').style.strokeDashoffset = off;
+      document.getElementById('time-disp').textContent = fmtT(G.timeLeft);
+      const brk = G.timerMode !== 'focus';
+      document.getElementById('ring-fill').classList.toggle('brk', brk);
+      document.getElementById('mode-disp').textContent =
+        brk ? (G.timerMode === 'short' ? 'SHORT BREAK' : 'LONG BREAK') : 'FOCUS TIME';
+    }
+
+    function rRank() {
+      const r = gRank(G.xp), nx = nRank(G.xp);
+      const rn = document.getElementById('rank-name');
+      rn.textContent = r.n; rn.style.color = r.c;
+      document.getElementById('xp-disp').textContent = `${G.xp} XP`;
+      document.getElementById('xp-cur').textContent = `${G.xp} XP`;
+      if (nx) {
+        document.getElementById('xp-fill').style.width = ((G.xp - r.min) / (nx.min - r.min) * 100) + '%';
+        document.getElementById('xp-nxt').textContent = `→ ${nx.min - G.xp} XP for ${nx.n}`;
+      } else {
+        document.getElementById('xp-fill').style.width = '100%';
+        document.getElementById('xp-nxt').textContent = '✦ Max Rank Achieved';
+      }
+    }
+
+    function rStats() {
+      const td = G.history[iso()] || { s: 0, m: 0 };
+      const sv_today = document.getElementById('sv-today'); if (sv_today) sv_today.textContent = td.s;
+      const sv_streak = document.getElementById('sv-streak'); if (sv_streak) sv_streak.textContent = G.streak > 0 ? `${G.streak}d` : '—';
+      const sv_total = document.getElementById('sv-total'); if (sv_total) sv_total.textContent = G.totalPomos;
+      const pos = G.totalPomos % 4;
+      for (let i = 0; i < 4; i++) document.getElementById(`cd${i}`).classList.toggle('on', i < pos);
+      document.getElementById('cycle-lbl').textContent = `${pos} / 4 · long break every 4 sessions`;
+    }
+
+    function rBoss() {
+      const card = document.getElementById('boss-card');
+      if (!card) return;
+      if (!G.bossMode) { card.classList.remove('show'); return; }
+      card.classList.add('show');
+      const pct = G.bossHp / BMAX;
+      document.getElementById('hp-bar-fill').style.width = (pct * 100) + '%';
+      document.getElementById('hp-lbl').textContent = `${G.bossHp} / ${BMAX} HP`;
+      const ico = document.getElementById('boss-ico'), ph = document.getElementById('boss-phase');
+      const win = document.getElementById('boss-victory'), tr = document.getElementById('hp-bar-bg'), mt = document.getElementById('hp-meta');
+      if (G.bossDefeated) {
+        ico.textContent = '💀'; ph.textContent = 'DEFEATED';
+        win.style.display = 'block'; tr.style.display = mt.style.display = 'none';
+      } else {
+        win.style.display = 'none'; tr.style.display = 'block'; mt.style.display = 'flex';
+        if (pct > .75) { ico.textContent = '😈'; ph.textContent = 'Lurking in the shadows'; }
+        else if (pct > .5) { ico.textContent = '😤'; ph.textContent = 'Awakened — anger rising'; }
+        else if (pct > .25) { ico.textContent = '😰'; ph.textContent = 'Desperate — barely holding'; }
+        else { ico.textContent = '🤕'; ph.textContent = 'Critical — finish him!'; }
+      }
+    }
+
+    function rAch() {
+      const g = document.getElementById('ach-grid');
+      g.innerHTML = ''; let cnt = 0;
+      if (!G.unlocked) G.unlocked = [];
+      ACHS.forEach(a => {
+        const done = G.unlocked.includes(a.id); if (done) cnt++;
+        const el = document.createElement('div'); el.className = 'ach' + (done ? ' done' : '');
+        el.innerHTML = `<div class="a-ico">${a.ico}</div><div class="a-nm">${a.n}</div><div class="a-dc">${a.d}</div><div class="a-xp">${done ? '✓ +' + a.xp + ' XP' : '+' + a.xp + ' XP'}</div>`;
+        g.appendChild(el);
+      });
+      document.getElementById('ach-ctr').textContent = `${cnt} / ${ACHS.length} unlocked`;
+    }
+
+    function rAnalytics() {
+      const hist = G.history, td = iso();
+      const days = Array.from({ length: 7 }, (_, i) => {
+        const d = new Date(); d.setDate(d.getDate() - (6 - i));
+        const k = d.toISOString().slice(0, 10);
+        return { k, lbl: d.toLocaleDateString('en-US', { weekday: 'short' }).slice(0, 2).toUpperCase(), s: hist[k]?.s || 0 };
+      });
+      const maxS = Math.max(...days.map(d => d.s), 1);
+
+      // Canvas-based chart
+      const cnvEl = document.getElementById('wk-canvas');
+      if (cnvEl) {
+        const W = cnvEl.offsetWidth || 320, H = 88;
+        cnvEl.width = W; cnvEl.height = H;
+        const ctx = cnvEl.getContext('2d');
+        ctx.clearRect(0, 0, W, H);
+        const barW = Math.floor((W - 20) / 7) - 4;
+        const barArea = H - 20;
+        const accColor = getComputedStyle(document.body).getPropertyValue('--acc').trim() || '#e8622a';
+        const mutColor = getComputedStyle(document.body).getPropertyValue('--mut').trim() || '#9a6038';
+        const glowColor = getComputedStyle(document.body).getPropertyValue('--glow').trim() || 'rgba(200,100,40,.4)';
+        const txtColor = getComputedStyle(document.body).getPropertyValue('--txt').trim() || '#f5dcc5';
+        days.forEach((d, i) => {
+          const x = 10 + i * ((W - 20) / 7);
+          const barH = d.s > 0 ? Math.max(4, (d.s / maxS) * barArea) : 2;
+          const y = barArea - barH;
+          const isToday = d.k === td;
+          // Bar
+          ctx.globalAlpha = isToday ? 1 : 0.55;
+          if (isToday) {
+            ctx.shadowColor = glowColor; ctx.shadowBlur = 8;
+          } else {
+            ctx.shadowBlur = 0;
+          }
+          ctx.fillStyle = isToday ? accColor : mutColor;
+          // Rounded top
+          const r = Math.min(4, barW / 2);
+          ctx.beginPath();
+          ctx.moveTo(x + r, y); ctx.lineTo(x + barW - r, y);
+          ctx.quadraticCurveTo(x + barW, y, x + barW, y + r);
+          ctx.lineTo(x + barW, y + barH); ctx.lineTo(x, y + barH);
+          ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y);
+          ctx.closePath(); ctx.fill();
+          ctx.shadowBlur = 0; ctx.globalAlpha = 1;
+          // Label
+          ctx.fillStyle = isToday ? accColor : mutColor;
+          ctx.font = `700 8px 'JetBrains Mono',monospace`;
+          ctx.textAlign = 'center';
+          ctx.fillText(d.lbl, x + barW / 2, H - 4);
+          // Value label if >0
+          if (d.s > 0) {
+            ctx.font = `500 7px 'JetBrains Mono',monospace`;
+            ctx.fillStyle = isToday ? txtColor : mutColor;
+            ctx.fillText(d.s, x + barW / 2, y - 3);
+          }
+        });
+      }
+
+      const ws = days.reduce((a, b) => a + b.s, 0);
+      const wm = days.reduce((a, b) => a + (hist[b.k]?.m || 0), 0);
+      const bd = Math.max(...days.map(d => d.s));
+      const am = Object.values(hist).reduce((a, b) => a + (b.m || 0), 0);
+      const el_ws = document.getElementById('an-ws'); if (el_ws) el_ws.textContent = ws || '—';
+      const el_wh = document.getElementById('an-wh'); if (el_wh) el_wh.textContent = wm ? (wm / 60).toFixed(1) + 'h' : '—';
+      const el_st = document.getElementById('an-st'); if (el_st) el_st.textContent = G.streak > 0 ? G.streak + 'd' : '—';
+      const el_bd = document.getElementById('an-bd'); if (el_bd) el_bd.textContent = bd || '—';
+      const el_tot = document.getElementById('an-tot'); if (el_tot) el_tot.textContent = G.totalPomos || '—';
+      const el_hrs = document.getElementById('an-hrs'); if (el_hrs) el_hrs.textContent = am ? (am / 60).toFixed(1) + 'h' : '—';
+      const tdm = hist[td]?.m || 0;
+      const el_tdlbl = document.getElementById('td-lbl'); if (el_tdlbl) el_tdlbl.textContent = `${tdm} / 120 min`;
+      const el_tdfill = document.getElementById('td-fill'); if (el_tdfill) el_tdfill.style.width = Math.min(100, (tdm / 120) * 100) + '%';
+    }
+
+
+    function rAll() { rRing(); rRank(); rStats(); rBoss(); rAch(); rAnalytics(); }
+
+    /* ── ACHIEVEMENTS CHECK ──────────────────────────────── */
+    function chkAchs(tdm, hcHit) {
+      const ctx = { p: G.totalPomos, str: G.streak, bd: G.bossDefeated, tm: tdm, hh: hcHit };
+      let bonus = 0;
+      ACHS.forEach(a => {
+        if (!G.unlocked.includes(a.id) && a.ok(ctx)) {
+          G.unlocked = [...G.unlocked, a.id]; bonus += a.xp;
+          setTimeout(() => toast(a.ico, `${a.n}  +${a.xp} XP`, 'var(--gold)'), 700);
+        }
+      });
+      return bonus;
+    }
+
+    /* ── SESSION COMPLETE ────────────────────────────────── */
+    function completeSession() {
+      const isFocus = G.timerMode === 'focus';
+      const prevRank = gRank(G.xp);
+      G.xp += isFocus ? 50 : 15;
+
+      if (isFocus) {
+        const td = iso(), day = G.history[td] || { s: 0, m: 0 };
+        G.history = { ...G.history, [td]: { s: day.s + 1, m: day.m + G.focusDur } };
+        G.totalPomos++;
+        G.streak = strCalc(G.streak, G.lastDay, td);
+        G.lastDay = td;
+
+        if (G.bossMode && !G.bossDefeated && G.bossHp > 0) {
+          G.bossHp = Math.max(0, G.bossHp - BDMG);
+          const face = document.getElementById('boss-ico');
+          face.classList.remove('hit'); void face.offsetWidth; face.classList.add('hit');
+          setTimeout(() => face.classList.remove('hit'), 550);
+          if (G.bossHp === 0) {
+            G.bossDefeated = true; G.xp += 150;
+            toast('🐉', 'Boss Defeated! +150 Bonus XP');
+            fireNotif('🐉 Boss Defeated', 'You earned +150 bonus XP!');
+          }
+        }
+        const tdm = G.history[iso()].m;
+        G.xp += chkAchs(tdm, G.hardcore);
+        fireNotif('🍅 Session Complete', '+50 XP earned. Time for a break!');
+        toast('🍅', '+50 XP — Session Complete!');
+        G.timerMode = (G.totalPomos % 4 === 0) ? 'long' : 'short';
+      } else {
+        fireNotif('⏰ Break Over', 'Time to focus!');
+        toast('⚡', 'Break done — next session!', 'var(--acc2)');
+        G.timerMode = 'focus';
+      }
+
+      const nr = gRank(G.xp);
+      if (nr.n !== prevRank.n) {
+        document.getElementById('lvl-sub').textContent = nr.n;
+        document.getElementById('lvl-ico').textContent = '🌟';
+        const ov = document.getElementById('lvl-ov');
+        ov.classList.add('show');
+        setTimeout(() => ov.classList.remove('show'), 3500);
+      }
+
+      G.timeLeft = durOf(G.timerMode, G);
+      G.wasRunning = false;
+      setRunning(false);
+      document.querySelectorAll('.m-tab').forEach(b => b.classList.toggle('active', b.dataset.mode === G.timerMode));
+      save(); rAll();
+
+      /* Fire alarm after all state updates */
+      fireAlarmSequence();
+
+      if (G.autoStart) setTimeout(() => setRunning(true), 2000);
+    }
+
+    /* ── TIMER ENGINE ────────────────────────────────────── */
+    function setRunning(on) {
+      running = on;
+      const btn = document.getElementById('btn-start');
+      if (running) {
+        btn.classList.add('paused');
+        btn.querySelector('.lb').textContent = '⏸ Pause';
+        ticker = setInterval(() => {
+          G.timeLeft--;
+          if (G.timeLeft <= 0) {
+            clearInterval(ticker); G.timeLeft = 0; rRing(); completeSession(); return;
+          }
+          document.getElementById('time-disp').textContent = fmtT(G.timeLeft);
+          document.getElementById('ring-fill').style.strokeDashoffset = CIRC * (G.timeLeft / durOf(G.timerMode, G));
+          document.title = `⏱ ${fmtT(G.timeLeft)} — Solstice Focus`;
+          if (G.timeLeft % 10 === 0) { G.wasRunning = true; save(); }
+        }, 1000);
+      } else {
+        clearInterval(ticker);
+        btn.classList.remove('paused');
+        btn.querySelector('.lb').textContent = '▶ Start';
+        document.title = 'Solstice Focus';
+        save();
+      }
+    }
+
+    /* ── BUILD PLAYLIST UI ───────────────────────────────── */
+    function buildPlUI() {
+      const list = document.getElementById('pl-list');
+      const empty = document.getElementById('pl-empty');
+      if (!playlist.length) {
+        list.innerHTML = '';
+        if (empty) { empty.style.display = 'block'; list.appendChild(empty); }
+        return;
+      }
+      if (empty) empty.style.display = 'none';
+      list.innerHTML = '';
+      playlist.forEach((t, i) => {
+        const el = document.createElement('div');
+        el.className = 'pl-item' + (i === plIdx && musicOn ? ' active' : '');
+        el.dataset.idx = i;
+        el.innerHTML = `<span class="pl-num">${i + 1}</span><span class="pl-nm">${t.name}</span><button class="pl-del" data-idx="${i}">✕</button>`;
+        el.addEventListener('click', e => {
+          if (e.target.classList.contains('pl-del')) return;
+          plIdx = i; doPlay(i);
+        });
+        el.querySelector('.pl-del').addEventListener('click', e => {
+          e.stopPropagation(); rmTrack(parseInt(e.target.dataset.idx));
+        });
+        list.appendChild(el);
+      });
+      refreshPlUI();
+    }
+
+    function rmTrack(idx) {
+      const wasActive = musicOn && plIdx === idx;
+      URL.revokeObjectURL(playlist[idx].url);
+      playlist.splice(idx, 1);
+      if (wasActive && playlist.length) { plIdx = idx % playlist.length; doPlay(plIdx); }
+      else if (wasActive) { pauseMusic(); if (musicEl) musicEl.src = ''; }
+      else if (plIdx > idx) plIdx--;
+      buildPlUI(); refreshPlUI();
+    }
+
+    /* ── INIT ────────────────────────────────────────────── */
+    function init() {
+      const sv = load();
+      G = sv ? sv : { ...DEF };
+      setSeason(G.season || 'autumn');
+
+      document.getElementById('si-f').value = G.focusDur;
+      document.getElementById('si-s').value = G.shortDur;
+      document.getElementById('si-l').value = G.longDur;
+      document.querySelectorAll('.m-tab').forEach(b => b.classList.toggle('active', b.dataset.mode === G.timerMode));
+      document.getElementById('tog-auto').classList.toggle('on', G.autoStart);
+      document.getElementById('tog-hc').classList.toggle('on', G.hardcore);
+      document.getElementById('tog-boss').classList.toggle('on', G.bossMode);
+      document.getElementById('tog-notif').classList.toggle('on', G.notifOn);
+      document.getElementById('hc-lbl').style.display = G.hardcore ? 'block' : 'none';
+      if (G.alarmVol !== undefined) document.getElementById('alarm-vol').value = G.alarmVol;
+      if (G.musicVol !== undefined) document.getElementById('pl-vol').value = G.musicVol;
+      if (G.wasRunning && G.timeLeft > 0) {
+        document.getElementById('res-t').textContent = fmtT(G.timeLeft);
+        document.getElementById('res-banner').classList.add('show');
+      }
+      buildPlUI();
+      rAll();
+      resizeCnv();
+      tickFX();
+    }
+
+    /* ── EVENTS ──────────────────────────────────────────── */
+    /* Start/Pause */
+    document.getElementById('btn-start').addEventListener('click', () => {
+      if (running && G.hardcore) { toast('💀', 'Hardcore: no pausing!', '#ff6060'); return; }
+      try { if (actx && actx.state === 'suspended') actx.resume(); } catch (_) { }
+      setRunning(!running);
+    });
+
+    /* Reset */
+    document.getElementById('btn-reset').addEventListener('click', () => {
+      if (running && G.hardcore) return;
+      setRunning(false); G.timeLeft = durOf(G.timerMode, G); rRing(); save();
+    });
+
+    /* Skip */
+    document.getElementById('btn-skip').addEventListener('click', () => {
+      setRunning(false); G.timeLeft = 0; completeSession();
+    });
+
+    /* Mode tabs */
+    document.querySelectorAll('.m-tab').forEach(btn => btn.addEventListener('click', () => {
+      if (running) return;
+      G.timerMode = btn.dataset.mode; G.timeLeft = durOf(btn.dataset.mode, G);
+      document.querySelectorAll('.m-tab').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active'); rRing(); save();
+    }));
+
+    /* Resume banner */
+    document.getElementById('btn-res').addEventListener('click', () => {
+      document.getElementById('res-banner').classList.remove('show'); setRunning(true);
+    });
+    document.getElementById('btn-dis').addEventListener('click', () => {
+      document.getElementById('res-banner').classList.remove('show'); G.wasRunning = false; save();
+    });
+
+    /* Season buttons */
+    document.querySelectorAll('.s-btn').forEach(btn => btn.addEventListener('click', () => setSeason(btn.dataset.s)));
+
+    /* Apply settings */
+    document.getElementById('btn-apply').addEventListener('click', () => {
+      const f = parseInt(document.getElementById('si-f').value) || 25;
+      const s = parseInt(document.getElementById('si-s').value) || 5;
+      const l = parseInt(document.getElementById('si-l').value) || 15;
+      G.focusDur = Math.max(1, Math.min(90, f));
+      G.shortDur = Math.max(1, Math.min(30, s));
+      G.longDur = Math.max(5, Math.min(60, l));
+      if (!running) { G.timeLeft = durOf(G.timerMode, G); rRing(); }
+      save(); toast('⚙️', 'Settings saved', 'var(--acc2)');
+    });
+
+    /* Toggles */
+    document.getElementById('tog-auto').addEventListener('click', function () {
+      G.autoStart = !G.autoStart; this.classList.toggle('on', G.autoStart); save();
+      toast('⚡', G.autoStart ? 'Auto-start ON' : 'Auto-start OFF');
+    });
+    document.getElementById('tog-hc').addEventListener('click', function () {
+      if (running) { toast('⚠️', 'Stop timer first', '#ff6060'); return; }
+      G.hardcore = !G.hardcore; this.classList.toggle('on', G.hardcore);
+      document.getElementById('hc-lbl').style.display = G.hardcore ? 'block' : 'none';
+      save(); toast('💀', G.hardcore ? 'Hardcore ON — no pausing!' : 'Hardcore OFF', '#ff6060');
+    });
+    document.getElementById('tog-boss').addEventListener('click', function () {
+      G.bossMode = !G.bossMode; this.classList.toggle('on', G.bossMode); rBoss(); save();
+      toast('🐉', G.bossMode ? 'Boss Fight ON' : 'Boss Fight OFF');
+    });
+    document.getElementById('tog-notif').addEventListener('click', async function () {
+      if (typeof Notification === 'undefined') { toast('🔕', 'Notifications not supported', '#ff6060'); return; }
+      if (Notification.permission === 'denied') { toast('🔕', 'Blocked in browser settings', '#ff6060'); return; }
+      if (Notification.permission !== 'granted') {
+        const p = await Notification.requestPermission();
+        if (p !== 'granted') { toast('🔕', 'Permission denied', '#ff6060'); return; }
+      }
+      G.notifOn = !G.notifOn; this.classList.toggle('on', G.notifOn); save();
+      toast('🔔', G.notifOn ? 'Notifications ON' : 'Notifications OFF');
+    });
+
+    /* Reset all */
+    document.getElementById('btn-wipe').addEventListener('click', () => {
+      if (!confirm('Delete ALL progress? This cannot be undone.')) return;
+      setRunning(false);
+      try { localStorage.removeItem(LS); } catch (_) { }
+      G = { ...DEF, season: currentSeason };
+      document.getElementById('si-f').value = 25;
+      document.getElementById('si-s').value = 5;
+      document.getElementById('si-l').value = 15;
+      document.querySelectorAll('.m-tab').forEach(b => b.classList.toggle('active', b.dataset.mode === 'focus'));
+      ['tog-auto', 'tog-hc', 'tog-boss', 'tog-notif'].forEach(id => document.getElementById(id).classList.remove('on'));
+      document.getElementById('hc-lbl').style.display = 'none';
+      document.getElementById('res-banner').classList.remove('show');
+      rAll(); toast('🗑️', 'All progress reset', '#ff6060');
+    });
+
+    /* Nav — handled by the unified nav handler registered below */
+    // (original nav handler intentionally removed to avoid double-firing)
+
+    /* Level-up dismiss */
+    document.getElementById('lvl-ov').addEventListener('click', () => document.getElementById('lvl-ov').classList.remove('show'));
+
+    /* File upload */
+    document.getElementById('file-in').addEventListener('change', function (e) {
+      const files = Array.from(e.target.files);
+      files.forEach(f => {
+        playlist.push({ name: f.name.replace(/\.[^/.]+$/, ''), url: URL.createObjectURL(f) });
+      });
+      this.value = '';
+      buildPlUI();
+      if (files.length) toast('🎵', `${files.length} track${files.length > 1 ? 's' : ''} added`);
+    });
+
+    /* Playlist controls */
+    document.getElementById('pl-play').addEventListener('click', () => {
+      try { getACtx(); } catch (_) { }
+      if (musicOn) pauseMusic();
+      else if (playlist.length) doPlay(plIdx);
+      else toast('🎵', 'Upload audio files first');
+    });
+    document.getElementById('pl-prev').addEventListener('click', () => {
+      if (!playlist.length) return;
+      plIdx = (plIdx - 1 + playlist.length) % playlist.length; doPlay(plIdx);
+    });
+    document.getElementById('pl-next').addEventListener('click', () => {
+      if (!playlist.length) return;
+      plIdx = (plIdx + 1) % playlist.length; doPlay(plIdx);
+    });
+    document.getElementById('pl-vol').addEventListener('input', function () {
+      G.musicVol = parseFloat(this.value); save();
+      if (musicEl) musicEl.volume = G.musicVol;
+    });
+    document.getElementById('pl-seek').addEventListener('input', function () {
+      if (musicEl && musicEl.duration) musicEl.currentTime = (this.value / 100) * musicEl.duration;
+    });
+
+    /* Alarm controls */
+    document.getElementById('alarm-vol').addEventListener('input', function () {
+      G.alarmVol = parseFloat(this.value); save();
+    });
+    document.getElementById('btn-test-alarm').addEventListener('click', () => {
+      try { getACtx(); } catch (_) { }
+      const vol = parseFloat(document.getElementById('alarm-vol').value || '0.8');
+      playAlarm(vol, () => { });
+      toast('🔔', 'Alarm test!');
+    });
+
+    /* Unload save */
+    window.addEventListener('beforeunload', e => {
+      if (!running) return;
+      G.wasRunning = true; save();
+      e.preventDefault(); e.returnValue = 'Active session — leave anyway?';
+    });
+
+    window.addEventListener('resize', () => { resizeCnv(); resizeAnimCnv(); });
+
+    /* ═══════════════════════════════════════════════════════
+       NEW SYSTEMS — Task Manager · Daily Quests · Focus Mode
+       Calendar · Enhanced Achievements · Enhanced Analytics
+       ═══════════════════════════════════════════════════════ */
+
+    /* ── TASK STORAGE (fixed) ──────────────────────────────────── */
+    const LS_TASKS = 'solstice_tasks_v1';
+    let tasks = [];
+    let activeTaskId = null;
+    // Load immediately so tasks are available before any event fires
+    (function _earlyLoadTasks() {
+      try {
+        const raw = localStorage.getItem(LS_TASKS);
+        if (raw) { const p = JSON.parse(raw); tasks = Array.isArray(p.tasks) ? p.tasks : Array.isArray(p) ? p : []; activeTaskId = p.activeTaskId || null; }
+      } catch (e) { }
+    })();
+
+    function saveTasks() {
+      try {
+        const payload = JSON.stringify({ tasks: tasks, activeTaskId: activeTaskId });
+        localStorage.setItem(LS_TASKS, payload);
+      } catch (e) { console.warn('saveTasks failed', e); }
+    }
+    function loadTasks() {
+      try {
+        const raw = localStorage.getItem(LS_TASKS);
+        if (!raw) return;
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed.tasks)) {
+          tasks = parsed.tasks;
+        } else if (Array.isArray(parsed)) {
+          // legacy format: plain array
+          tasks = parsed;
+        } else {
+          tasks = [];
+        }
+        activeTaskId = parsed.activeTaskId || null;
+      } catch (e) {
+        tasks = [];
+        activeTaskId = null;
+        console.warn('loadTasks failed', e);
+      }
+    }
+
+    function getActiveTask() { return tasks.find(t => t.id === activeTaskId) || null; }
+
+    /* ── QUEST STORAGE ─────────────────────────────────────────── */
+    const LS_QUESTS = 'solstice_quests_v1';
+    let quests = [];   // {id, type, target, progress, xp, done}
+    let questDay = '';
+    let questBonusClaimed = false;
+
+    const QUEST_BONUS = 100; // bonus XP for completing all daily quests
+
+    function saveQuests() {
+      try { localStorage.setItem(LS_QUESTS, JSON.stringify({ quests, questDay, questBonusClaimed })); } catch (_) { }
+    }
+    function loadQuests() {
+      try {
+        const r = localStorage.getItem(LS_QUESTS);
+        if (r) { const d = JSON.parse(r); quests = d.quests || []; questDay = d.questDay || ''; questBonusClaimed = !!d.questBonusClaimed; }
+      } catch (_) { }
+    }
+
+    function generateQuests(today) {
+      // Seed based on date so quests are consistent per day but vary each day
+      const seed = today.split('-').reduce((a, b) => a * 100 + parseInt(b), 0);
+      const rng = (n) => { const x = Math.sin(seed + n) * 10000; return x - Math.floor(x); };
+      const focusSessions = [2, 3, 4, 5, 6][Math.floor(rng(1) * 5)];
+      const focusMins = [30, 45, 60, 90, 120][Math.floor(rng(2) * 5)];
+      const taskCount = [1, 2, 3][Math.floor(rng(3) * 3)];
+      return [
+        { id: 'q_sessions', type: 'sessions', target: focusSessions, progress: 0, xp: 50 + (focusSessions - 2) * 15, done: false, ico: '🍅', label: `Complete ${focusSessions} focus sessions` },
+        { id: 'q_minutes', type: 'minutes', target: focusMins, progress: 0, xp: 40 + (focusMins / 30) * 10, done: false, ico: '⏱', label: `Focus for ${focusMins} total minutes` },
+        { id: 'q_tasks', type: 'tasks', target: taskCount, progress: 0, xp: 60 + (taskCount - 1) * 20, done: false, ico: '✅', label: `Complete ${taskCount} task${taskCount > 1 ? 's' : ''}` },
+      ];
+    }
+
+    function ensureQuestsForToday() {
+      const today = iso();
+      if (questDay !== today) {
+        quests = generateQuests(today);
+        questDay = today;
+        questBonusClaimed = false;
+        saveQuests();
+      }
+    }
+
+    function updateQuestProgress(type, amount = 1) {
+      ensureQuestsForToday();
+      let changed = false;
+      quests.forEach(q => {
+        if (q.type === type && !q.done) {
+          q.progress = Math.min(q.target, q.progress + amount);
+          if (q.progress >= q.target) {
+            q.done = true;
+            G.xp += q.xp;
+            toast('🎯', `Quest done: ${q.label.slice(0, 28)}… +${q.xp} XP`, 'var(--gold)');
+            changed = true;
+          }
+        }
+      });
+      if (changed) {
+        const allDone = quests.every(q => q.done);
+        if (allDone && !questBonusClaimed) {
+          questBonusClaimed = true;
+          G.xp += QUEST_BONUS;
+          save();
+          toast('🎯', `All quests complete! +${QUEST_BONUS} XP bonus`, 'var(--gold)');
+        }
+        save();
+      }
+      saveQuests();
+      const qtab = document.getElementById('tab-quests'); if (qtab && qtab.classList.contains('on')) rQuests();
+    }
+
+    /* ── ENHANCED ACHIEVEMENTS ─────────────────────────────────── */
+    // Extended achievement list (added to existing ACHS at runtime)
+    const ACHS_EXT = [
+      { id: 'task1', n: 'Task Master', d: 'Complete your first task', ico: '✅', xp: 75, ok: (s, td) => td >= 1 },
+      { id: 'task10', n: 'Task Crusher', d: 'Complete 10 tasks total', ico: '💼', xp: 150, ok: (s, td) => td >= 10 },
+      { id: 'xp500', n: 'XP Hoarder', d: 'Accumulate 500 XP', ico: '💰', xp: 100, ok: (s) => s.x >= 500 },
+      { id: 'xp2000', n: 'XP Legend', d: 'Accumulate 2000 XP', ico: '👑', xp: 300, ok: (s) => s.x >= 2000 },
+      { id: 'boss3', n: 'Boss Hunter', d: 'Defeat the boss 3 times', ico: '⚔️', xp: 250, ok: (s) => s.bc >= 3 },
+      { id: 's14', n: 'Fortnight', d: '14-day streak', ico: '🗓️', xp: 400, ok: (s) => s.str >= 14 },
+      { id: 'p100', n: 'Century', d: 'Complete 100 focus sessions', ico: '🎖️', xp: 1000, ok: (s) => s.p >= 100 },
+    ];
+
+    function checkAllAchs(tdMin, hcHit, tasksCompleted) {
+      const ctx = { p: G.totalPomos, str: G.streak, bd: G.bossDefeated, tm: tdMin, hh: hcHit };
+      const ctx2 = { x: G.xp, str: G.streak, p: G.totalPomos, bc: G.bossDefeated ? (G.bossKills || 1) : 0 };
+      let bonus = 0;
+
+      // Original achievements
+      ACHS.forEach(a => {
+        if (!G.unlocked.includes(a.id) && a.ok(ctx)) {
+          G.unlocked = [...G.unlocked, a.id]; bonus += a.xp;
+          scheduleAchPopup(a, 800);
+        }
+      });
+
+      // Extended achievements
+      const td_tasks = tasks.filter(t => t.done).length;
+      ACHS_EXT.forEach(a => {
+        if (!G.unlocked.includes(a.id)) {
+          let unlocks = false;
+          if (a.id === 'task1' || a.id === 'task10') unlocks = a.ok(ctx2, td_tasks);
+          else unlocks = a.ok(ctx2, td_tasks);
+          if (unlocks) { G.unlocked = [...G.unlocked, a.id]; bonus += a.xp; scheduleAchPopup(a, 1600); }
+        }
+      });
+      return bonus;
+    }
+
+    let achPopupQueue = [];
+    let achPopupShowing = false;
+
+    function scheduleAchPopup(a, delay) {
+      achPopupQueue.push({ a, delay });
+      if (!achPopupShowing) processAchQueue();
+    }
+
+    function processAchQueue() {
+      if (!achPopupQueue.length) { achPopupShowing = false; return; }
+      achPopupShowing = true;
+      const { a, delay } = achPopupQueue.shift();
+      setTimeout(() => {
+        document.getElementById('ach-pop-ico').textContent = a.ico;
+        document.getElementById('ach-pop-name').textContent = a.n;
+        document.getElementById('ach-pop-desc').textContent = a.d;
+        document.getElementById('ach-pop-xp').textContent = `+${a.xp} XP`;
+        const pop = document.getElementById('ach-popup');
+        pop.classList.add('show');
+        setTimeout(() => { pop.classList.remove('show'); setTimeout(processAchQueue, 400); }, 3500);
+      }, delay);
+    }
+
+    /* ── TASK MANAGER ─────────────────────────────────────────── */
+    function buildTaskUI() {
+      if (!Array.isArray(tasks)) tasks = [];
+      const list = document.getElementById('task-list');
+      if (!list) return;
+
+      // Always fully rebuild list HTML — never rely on DOM element reuse
+      if (!tasks.length) {
+        list.innerHTML = '<div class="task-empty-msg" style="text-align:center;padding:22px;font-family:JetBrains Mono,monospace;font-size:11px;color:var(--mut);opacity:.6">No tasks yet. Add one above to begin.</div>';
+        updateTaskStats(); updateActiveTaskBanner(); return;
+      }
+
+      list.innerHTML = '';
+      tasks.forEach((task, i) => {
+        if (!task || !task.id) return; // skip corrupt entries
+        const pomoPct = task.pomos > 0 ? Math.min(100, (task.pomsDone / task.pomos) * 100) : 0;
+        const isActive = task.id === activeTaskId;
+        const el = document.createElement('div');
+        el.className = 'task-item' + (task.done ? ' done' : '') + (isActive ? ' active-task' : '');
+        el.draggable = true;
+        el.dataset.id = task.id;
+        el.dataset.idx = String(i);
+
+        const activeBtn = task.done ? '' :
+          `<button class="task-set-active" data-id="${task.id}">${isActive ? 'Active ✓' : 'Set'}</button>`;
+
+        el.innerHTML =
+          `<div class="task-row1">` +
+          `<div class="task-check${task.done ? ' checked' : ''}" title="Toggle complete"></div>` +
+          `<span class="task-title">${esc(task.title)}</span>` +
+          `<span class="task-pomo-badge">🍅 ${task.pomsDone}/${task.pomos}</span>` +
+          activeBtn +
+          `<button class="task-edit" title="Edit">✎</button>` +
+          `<button class="task-del" title="Delete">✕</button>` +
+          `</div>` +
+          `<div class="task-prog-bg"><div class="task-prog-fill" style="width:${pomoPct}%"></div></div>`;
+
+        // Bind events (closure captures task.id and i safely)
+        const tid = task.id;
+        el.querySelector('.task-check').addEventListener('click', (e) => { e.stopPropagation(); toggleTask(tid); });
+        el.querySelector('.task-del').addEventListener('click', (e) => { e.stopPropagation(); deleteTask(tid); });
+        el.querySelector('.task-edit').addEventListener('click', (e) => { e.stopPropagation(); startEditTask(tid); });
+        // Double-click title to edit
+        el.querySelector('.task-title').addEventListener('dblclick', (e) => { e.stopPropagation(); startEditTask(tid); });
+        const setBtn = el.querySelector('.task-set-active');
+        if (setBtn) setBtn.addEventListener('click', (e) => { e.stopPropagation(); setActiveTask(tid); });
+
+        // Drag & drop — use captured index
+        el.addEventListener('dragstart', (e) => {
+          e.dataTransfer.setData('text/plain', String(i));
+          e.dataTransfer.effectAllowed = 'move';
+          el.classList.add('dragging');
+        });
+        el.addEventListener('dragend', () => el.classList.remove('dragging'));
+        el.addEventListener('dragover', (e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; el.classList.add('drag-over'); });
+        el.addEventListener('dragleave', () => el.classList.remove('drag-over'));
+        el.addEventListener('drop', (e) => {
+          e.preventDefault();
+          el.classList.remove('drag-over');
+          const fromIdx = parseInt(e.dataTransfer.getData('text/plain'));
+          const toIdx = parseInt(el.dataset.idx);
+          if (!isNaN(fromIdx) && !isNaN(toIdx) && fromIdx !== toIdx) {
+            const arr = [...tasks];
+            const [removed] = arr.splice(fromIdx, 1);
+            arr.splice(toIdx, 0, removed);
+            tasks = arr;
+            saveTasks();
+            buildTaskUI();
+          }
+        });
+
+        list.appendChild(el);
+      });
+
+      updateTaskStats();
+      updateActiveTaskBanner();
+    }
+
+    function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+    function addTask() {
+      const inp = document.getElementById('task-input');
+      const sel = document.getElementById('task-pomo-sel');
+      const title = (inp.value || '').trim();
+      if (!title) { inp.focus(); return; }
+      const newTask = {
+        id: 't' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+        title: title,
+        pomos: parseInt(sel.value) || 1,
+        done: false,
+        pomsDone: 0,
+        createdAt: Date.now()
+      };
+      if (!Array.isArray(tasks)) tasks = [];
+      tasks.push(newTask);
+      inp.value = '';
+      inp.focus();
+      saveTasks();
+      buildTaskUI();
+      toast('✅', 'Task added — ' + newTask.pomos + ' 🍅');
+    }
+
+    function toggleTask(id) {
+      const t = tasks.find(x => x.id === id);
+      if (!t) return;
+      if (!t.done) {
+        t.done = true;
+        const xpBonus = 30 + t.pomos * 10;
+        G.xp += xpBonus;
+        save();
+        toast('✅', `Task complete! +${xpBonus} XP`, 'var(--gold)');
+        updateQuestProgress('tasks', 1);
+        calLogTask(iso());
+        G.xp += checkAllAchs(0, false, tasks.filter(x => x.done).length);
+        save(); rRank();
+        if (id === activeTaskId) activeTaskId = null;
+      } else {
+        t.done = false;
+      }
+      saveTasks(); buildTaskUI(); rAch();
+    }
+
+    function deleteTask(id) {
+      tasks = tasks.filter(t => t.id !== id);
+      if (activeTaskId === id) activeTaskId = null;
+      saveTasks(); buildTaskUI();
+    }
+
+    function setActiveTask(id) {
+      activeTaskId = (activeTaskId === id) ? null : id;
+      saveTasks(); buildTaskUI();
+    }
+
+    function creditPomoToTask() {
+      if (!activeTaskId) return;
+      const t = tasks.find(x => x.id === activeTaskId);
+      if (t && !t.done) { t.pomsDone = Math.min(t.pomos, t.pomsDone + 1); saveTasks(); buildTaskUI(); updateActiveTaskBanner(); }
+    }
+
+    function updateActiveTaskBanner() {
+      const banner = document.getElementById('active-task-banner');
+      const t = getActiveTask();
+      if (t && !t.done) {
+        document.getElementById('atb-name').textContent = t.title;
+        document.getElementById('atb-prog').textContent = `${t.pomsDone}/${t.pomos} 🍅`;
+        banner.classList.add('show');
+        const ftn = document.getElementById('focus-task-name');
+        if (ftn) ftn.textContent = t.title;
+      } else {
+        banner.classList.remove('show');
+        const ftn = document.getElementById('focus-task-name');
+        if (ftn) ftn.textContent = '';
+      }
+    }
+
+    function updateTaskStats() {
+      document.getElementById('ts-total').textContent = tasks.length;
+      document.getElementById('ts-done').textContent = tasks.filter(t => t.done).length;
+      const xpFromTasks = tasks.filter(t => t.done).reduce((a, t) => a + (30 + t.pomos * 10), 0);
+      document.getElementById('ts-xp').textContent = xpFromTasks;
+    }
+
+    document.getElementById('btn-add-task').addEventListener('click', addTask);
+    document.getElementById('task-input').addEventListener('keydown', e => { if (e.key === 'Enter') addTask(); });
+
+    /* ── DAILY QUESTS UI ──────────────────────────────────────── */
+    function rQuests() {
+      ensureQuestsForToday();
+      const d = new Date();
+      document.getElementById('quest-date').textContent = d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+      const list = document.getElementById('quest-list');
+      list.innerHTML = '';
+      quests.forEach(q => {
+        const pct = Math.min(100, q.target > 0 ? (q.progress / q.target) * 100 : 0);
+        const el = document.createElement('div');
+        el.className = 'quest-item' + (q.done ? ' done' : '');
+        el.innerHTML = `
+      <div class="quest-row1">
+        <span class="quest-ico">${q.ico}</span>
+        <span class="quest-txt">${q.label}</span>
+        <span class="quest-xp">+${q.xp} XP</span>
+        ${q.done ? '<span class="quest-done-mark">✓</span>' : ''}
+      </div>
+      <div class="quest-prog-bg"><div class="quest-prog-fill" style="width:${pct}%"></div></div>
+      <div class="quest-prog-lbl">${q.progress} / ${q.target}${q.done ? ' — Complete!' : ''}</div>`;
+        list.appendChild(el);
+      });
+      const allDone = quests.every(q => q.done);
+      const el = document.getElementById('quest-all-done');
+      el.classList.toggle('show', allDone);
+      document.getElementById('quest-bonus-xp').textContent = questBonusClaimed ? `+${QUEST_BONUS} XP bonus claimed!` : `+${QUEST_BONUS} XP bonus on completion`;
+    }
+
+    /* ── FOCUS MODE ───────────────────────────────────────────── */
+    const FOCUS_CIRC = 2 * Math.PI * 112; // r=112 for focus overlay ring
+    let focusModeOn = false;
+
+    function enterFocusMode() {
+      focusModeOn = true;
+      document.getElementById('focus-overlay').classList.add('show');
+      document.body.style.overflow = 'hidden';
+      updateFocusOverlay();
+      if (!running) setRunning(true);
+    }
+
+    function exitFocusMode() {
+      focusModeOn = false;
+      document.getElementById('focus-overlay').classList.remove('show');
+      document.body.style.overflow = '';
+      if (document.fullscreenElement) document.exitFullscreen().catch(() => { });
+    }
+
+    function updateFocusOverlay() {
+      if (!focusModeOn) return;
+      document.getElementById('focus-time').textContent = fmtT(G.timeLeft);
+      const dur = durOf(G.timerMode, G);
+      const off = FOCUS_CIRC * (G.timeLeft / dur);
+      document.getElementById('focus-ring-prog').style.strokeDashoffset = off;
+      const brk = G.timerMode !== 'focus';
+      document.getElementById('focus-ring-prog').classList.toggle('brk', brk);
+      document.getElementById('focus-mode-lbl').textContent = brk ? (G.timerMode === 'short' ? 'SHORT BREAK' : 'LONG BREAK') : 'FOCUS TIME';
+      document.getElementById('focus-pause-lb').textContent = running ? '⏸ Pause' : '▶ Resume';
+      const streak = document.getElementById('focus-streak-wrap');
+      if (streak) streak.textContent = G.streak > 0 ? `🔥 ${G.streak} day streak` : '';
+      updateActiveTaskBanner();
+    }
+
+    document.getElementById('btn-focus-mode').addEventListener('click', enterFocusMode);
+    document.getElementById('focus-exit-btn').addEventListener('click', exitFocusMode);
+    document.getElementById('focus-pause-btn').addEventListener('click', () => {
+      if (running && G.hardcore) { toast('💀', 'Hardcore: no pausing!', '#ff6060'); return; }
+      setRunning(!running);
+      updateFocusOverlay();
+    });
+    document.getElementById('focus-fs-btn').addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => { });
+        document.getElementById('focus-fs-btn').textContent = '⛶ Exit Fullscreen';
+      } else {
+        document.exitFullscreen();
+        document.getElementById('focus-fs-btn').textContent = '⛶ Fullscreen';
+      }
+    });
+    document.getElementById('focus-overlay').addEventListener('click', e => {
+      if (e.target === document.getElementById('focus-overlay')) { } // don't close on bg click
+    });
+
+    /* ── ENHANCED ANALYTICS (canvas chart) ───────────────────── */
+    function rAnalyticsEnhanced() {
+      // Small delay on first call ensures canvas has layout width
+      setTimeout(() => rAnalytics(), 10);
+      const hist = G.history, td = iso();
+      // All-time enhanced stats
+      const totalBossDefeats = G.bossKills || (G.bossDefeated ? 1 : 0);
+      const tasksDone = tasks.filter(t => t.done).length;
+      const longestStreak = G.longestStreak || G.streak;
+
+      // Extend the all-time analytics grid with extra stats
+      const anGrid = document.getElementById('an-grid-alltime');
+      if (anGrid) {
+        // Only add the extra boxes if they haven't been added yet
+        if (!document.getElementById('an-tasks')) {
+          const extraBoxes = [
+            { id: 'an-tasks', v: tasksDone, l: 'Tasks Done' },
+            { id: 'an-longest', v: longestStreak, l: 'Best Streak' },
+            { id: 'an-bosses', v: totalBossDefeats, l: 'Bosses Slain' },
+            { id: 'an-xptot', v: G.xp, l: 'Total XP' },
+          ];
+          extraBoxes.forEach(({ id, v, l }) => {
+            const box = document.createElement('div'); box.className = 'an-box';
+            box.innerHTML = `<div class="an-v" id="${id}">${v}</div><div class="an-l">${l}</div>`;
+            anGrid.appendChild(box);
+          });
+        } else {
+          // Just update values
+          const el_tasks = document.getElementById('an-tasks'); if (el_tasks) el_tasks.textContent = tasksDone;
+          const el_longest = document.getElementById('an-longest'); if (el_longest) el_longest.textContent = longestStreak;
+          const el_bosses = document.getElementById('an-bosses'); if (el_bosses) el_bosses.textContent = totalBossDefeats;
+          const el_xptot = document.getElementById('an-xptot'); if (el_xptot) el_xptot.textContent = G.xp;
+        }
+      }
+    }
+
+    /* ── HOOK INTO EXISTING completeSession ──────────────────── */
+    // Patch completeSession to call new systems
+    const _origComplete = completeSession;
+    // We'll override by monkey-patching the focus update into the tick loop
+    // Actually we inject calls directly by redefining completeSession
+    window._taskPomoCredit = creditPomoToTask;
+    window._questProgressSessions = () => updateQuestProgress('sessions', 1);
+    window._questProgressMinutes = (m) => updateQuestProgress('minutes', m);
+    window._focusUpdate = updateFocusOverlay;
+
+    /* ── OVERRIDE rAll TO INCLUDE NEW SYSTEMS ────────────────── */
+    const _origRAll = rAll;
+    window.rAll = function () {
+      _origRAll();
+      updateActiveTaskBanner();
+    };
+
+    /* ── PATCH INIT FOR NEW SYSTEMS ──────────────────────────── */
+    function initNewSystems() {
+      loadTasks();
+      loadQuests();
+      loadCalData();
+      loadCalNotes();
+      ensureQuestsForToday();
+      // Migrate existing G.history → calData so no data is lost
+      Object.keys(G.history || {}).forEach(k => {
+        if (!calData[k]) {
+          calData[k] = {
+            sessions: G.history[k].s || 0,
+            minutes: G.history[k].m || 0,
+            tasks: 0
+          };
+        } else {
+          // Sync sessions/minutes if calData is behind G.history
+          if (calData[k].sessions < (G.history[k].s || 0)) {
+            calData[k].sessions = G.history[k].s || 0;
+            calData[k].minutes = G.history[k].m || 0;
+          }
+        }
+      });
+      saveCalData();
+      buildTaskUI();
+      rQuests();
+      setupCalPlanButtons();
+      // Prime calendar so it renders when tab is first opened
+      calYear = new Date().getFullYear();
+      calMonth = new Date().getMonth();
+      rCalendar();
+    }
+
+    /* ── NAV for new tabs ──────────────────────────────────────── */
+    // Override nav click handler to support new tabs
+    document.querySelectorAll('.nav-btn').forEach(btn => btn.addEventListener('click', () => {
+      const t = btn.dataset.tab;
+      document.querySelectorAll('.tab').forEach(el => el.classList.remove('on'));
+      const tabEl = document.getElementById('tab-' + t);
+      if (tabEl) tabEl.classList.add('on');
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('on'));
+      btn.classList.add('on');
+      if (t === 'analytics') rAnalyticsEnhanced();
+      if (t === 'ach') rAch();
+      if (t === 'quests') rQuests();
+      if (t === 'calendar') { rCalendar(); }
+      if (t === 'tasks') buildTaskUI();
+    }));
+
+    /* ── KICK OFF NEW SYSTEMS ──────────────────────────────────── */
+    // initNewSystems() is called after init() below — needs G populated first
+
+    /* ── EXTENDED rAch TO INCLUDE EXT ACHIEVEMENTS ────────────── */
+    const _origRAch = rAch;
+    window.rAch = function () {
+      const g = document.getElementById('ach-grid');
+      if (!g) return;
+      if (!G.unlocked) G.unlocked = [];
+      g.innerHTML = ''; let cnt = 0;
+      const allAchs = [...ACHS, ...(typeof ACHS_EXT !== 'undefined' ? ACHS_EXT : [])];
+      allAchs.forEach(a => {
+        const done = G.unlocked.includes(a.id); if (done) cnt++;
+        const el = document.createElement('div'); el.className = 'ach' + (done ? ' done' : '');
+        el.innerHTML = `<div class="a-ico">${a.ico}</div><div class="a-nm">${a.n}</div><div class="a-dc">${a.d}</div><div class="a-xp">${done ? '✓ +' + a.xp + ' XP' : '+' + a.xp + ' XP'}</div>`;
+        g.appendChild(el);
+      });
+      document.getElementById('ach-ctr').textContent = `${cnt} / ${allAchs.length} unlocked`;
+    };
+
+    /* ── PATCH completeSession to credit tasks & quests ──────── */
+    // We do this cleanly by wrapping the existing ticker logic.
+    // The ticker at every completion calls completeSession().
+    // We patch by replacing it with a wrapper that adds side-effects.
+    const _origSetRunning = setRunning;
+    // Intercept completion inside the timer tick by extending the global ticker
+    // The existing ticker calls completeSession() when timeLeft<=0.
+    // We patch completeSession itself:
+    (function () {
+      const orig = window.completeSession || completeSession;
+      const patched = function () {
+        const wasFocus = G.timerMode === 'focus';
+        const focusDurAtComplete = G.focusDur;
+        orig();
+        // after original runs:
+        if (wasFocus) {
+          window._taskPomoCredit();
+          window._questProgressSessions();
+          window._questProgressMinutes(focusDurAtComplete);
+          // Log to calendar data
+          calLogSession(iso(), focusDurAtComplete);
+          // Refresh calendar if tab is open
+          const ctab = document.getElementById('tab-calendar');
+          if (ctab && ctab.classList.contains('on')) rCalendar();
+          // update longestStreak
+          if (G.streak > (G.longestStreak || 0)) {
+            G.longestStreak = G.streak; save();
+          }
+        }
+        updateFocusOverlay();
+        const qtab = document.getElementById('tab-quests'); if (qtab && qtab.classList.contains('on')) rQuests();
+      };
+      // Replace global reference used by skip button and ticker
+      window.completeSession = patched;
+      // Patch skip button  
+      const skipBtn = document.getElementById('btn-skip');
+      if (skipBtn) {
+        const newSkip = skipBtn.cloneNode(true);
+        skipBtn.parentNode.replaceChild(newSkip, skipBtn);
+        newSkip.addEventListener('click', () => { setRunning(false); G.timeLeft = 0; window.completeSession(); });
+      }
+
+      // Patch ticker to use patched completeSession
+      const origSetRunning2 = setRunning;
+      window.setRunning = function (on) {
+        running = on;
+        const btn = document.getElementById('btn-start');
+        if (running) {
+          btn.classList.add('paused');
+          btn.querySelector('.lb').textContent = '⏸ Pause';
+          clearInterval(ticker);
+          ticker = setInterval(() => {
+            G.timeLeft--;
+            if (G.timeLeft <= 0) {
+              clearInterval(ticker); G.timeLeft = 0;
+              document.getElementById('time-disp').textContent = fmtT(0);
+              document.getElementById('ring-fill').style.strokeDashoffset = CIRC;
+              window.completeSession(); return;
+            }
+            document.getElementById('time-disp').textContent = fmtT(G.timeLeft);
+            document.getElementById('ring-fill').style.strokeDashoffset = CIRC * (G.timeLeft / durOf(G.timerMode, G));
+            document.title = `⏱ ${fmtT(G.timeLeft)} — Solstice Focus`;
+            if (G.timeLeft % 10 === 0) { G.wasRunning = true; save(); }
+            updateFocusOverlay();
+          }, 1000);
+        } else {
+          clearInterval(ticker);
+          btn.classList.remove('paused');
+          btn.querySelector('.lb').textContent = '▶ Start';
+          document.title = 'Solstice Focus';
+          save();
+          updateFocusOverlay();
+        }
+      };
+      // Patch start/pause button to use new setRunning
+      const startBtn = document.getElementById('btn-start');
+      const newStart = startBtn.cloneNode(true);
+      startBtn.parentNode.replaceChild(newStart, startBtn);
+      newStart.addEventListener('click', () => {
+        if (running && G.hardcore) { toast('💀', 'Hardcore: no pausing!', '#ff6060'); return; }
+        try { if (actx && actx.state === 'suspended') actx.resume(); } catch (_) { }
+        window.setRunning(!running);
+      });
+      // Patch reset button
+      const resetBtn = document.getElementById('btn-reset');
+      const newReset = resetBtn.cloneNode(true);
+      resetBtn.parentNode.replaceChild(newReset, resetBtn);
+      newReset.addEventListener('click', () => {
+        if (running && G.hardcore) return;
+        window.setRunning(false); G.timeLeft = durOf(G.timerMode, G); rRing(); save();
+      });
+      // Patch resume banner
+      const resBtn = document.getElementById('btn-res');
+      const newRes = resBtn.cloneNode(true);
+      resBtn.parentNode.replaceChild(newRes, resBtn);
+      newRes.addEventListener('click', () => {
+        document.getElementById('res-banner').classList.remove('show'); window.setRunning(true);
+      });
+      // Focus mode pause
+      document.getElementById('focus-pause-btn').addEventListener('click', () => {
+        if (running && G.hardcore) { toast('💀', 'Hardcore: no pausing!', '#ff6060'); return; }
+        window.setRunning(!running);
+        updateFocusOverlay();
+      });
+    })();
+
+    /* ── WIPE patch to also clear tasks/quests ─────────────────── */
+    const wipeBtn = document.getElementById('btn-wipe');
+    const newWipe = wipeBtn.cloneNode(true);
+    wipeBtn.parentNode.replaceChild(newWipe, wipeBtn);
+    newWipe.addEventListener('click', () => {
+      if (!confirm('Delete ALL progress, tasks, and quests? This cannot be undone.')) return;
+      window.setRunning(false);
+      try { localStorage.removeItem(LS); localStorage.removeItem(LS_TASKS); localStorage.removeItem(LS_QUESTS); localStorage.removeItem(LS_NOTES); localStorage.removeItem(LS_CAL); } catch (_) { }
+      G = { ...DEF, season: currentSeason };
+      tasks = []; activeTaskId = null; quests = []; questDay = ''; questBonusClaimed = false; calNotes = {}; calData = {};
+      document.getElementById('si-f').value = 25;
+      document.getElementById('si-s').value = 5;
+      document.getElementById('si-l').value = 15;
+      document.querySelectorAll('.m-tab').forEach(b => b.classList.toggle('active', b.dataset.mode === 'focus'));
+      ['tog-auto', 'tog-hc', 'tog-boss', 'tog-notif'].forEach(id => document.getElementById(id).classList.remove('on'));
+      document.getElementById('hc-lbl').style.display = 'none';
+      document.getElementById('res-banner').classList.remove('show');
+      ensureQuestsForToday();
+      rAll(); buildTaskUI(); rQuests();
+      toast('🗑️', 'All progress reset', '#ff6060');
+    });
+
+    /* ── FULLSCREEN EXIT listener ──────────────────────────────── */
+    document.addEventListener('fullscreenchange', () => {
+      if (!document.fullscreenElement) {
+        document.getElementById('focus-fs-btn').textContent = '⛶ Fullscreen';
+      }
+    });
+
+    /* ── FINAL: run initial render of new systems ─────────────── */
+    // rAch() is called after init() below — G.unlocked must exist first
+
+
+    /* ── LIVE CLOCK ─────────────────────────────────────────── */
+    function updateClock() {
+      const now = new Date();
+      const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const dow = days[now.getDay()];
+      const dateStr = `${months[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()}`;
+      const h = String(now.getHours()).padStart(2, '0');
+      const m = String(now.getMinutes()).padStart(2, '0');
+      const s = String(now.getSeconds()).padStart(2, '0');
+      const el_day = document.getElementById('dt-day');
+      const el_date = document.getElementById('dt-date');
+      const el_time = document.getElementById('dt-time');
+      if (el_day) el_day.textContent = dow;
+      if (el_date) el_date.textContent = dateStr;
+      if (el_time) el_time.textContent = `${h}:${m}:${s}`;
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+
+
+    /* ── TASK INLINE EDIT ────────────────────────────────────────── */
+    function startEditTask(id) {
+      const t = tasks.find(x => x.id === id);
+      if (!t) return;
+      const el = document.querySelector(`.task-item[data-id="${id}"]`);
+      if (!el) return;
+      const titleEl = el.querySelector('.task-title');
+      if (!titleEl) return;
+      const old = t.title;
+      titleEl.contentEditable = 'true';
+      titleEl.style.outline = '1px solid var(--acc)';
+      titleEl.style.borderRadius = '4px';
+      titleEl.style.padding = '2px 4px';
+      titleEl.focus();
+      // Select all text
+      const range = document.createRange(); range.selectNodeContents(titleEl);
+      const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
+      function finish(save) {
+        titleEl.contentEditable = 'false';
+        titleEl.style.outline = '';
+        titleEl.style.borderRadius = '';
+        titleEl.style.padding = '';
+        if (save) {
+          const newTitle = (titleEl.textContent || '').trim();
+          if (newTitle && newTitle !== old) { t.title = newTitle; saveTasks(); }
+          else { titleEl.textContent = old; }
+        } else { titleEl.textContent = old; }
+      }
+      titleEl.addEventListener('blur', () => finish(true), { once: true });
+      titleEl.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); finish(true); titleEl.blur(); }
+        if (e.key === 'Escape') { e.preventDefault(); finish(false); titleEl.blur(); }
+      }, { once: true });
+    }
+
+    /* ═══ END OF EXTENSIONS ════════════════════════════════ */
+
+    /* ── GO ─────────────────────────────────────────────── */
+    init();            // populates G from localStorage
+    initNewSystems();  // needs G — loads cal/tasks/quests, renders calendar
+    rAch();            // needs G.unlocked
+  </script>
+</body>
+
+</html>
